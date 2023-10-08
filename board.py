@@ -58,7 +58,7 @@ class Board:
         
         # Piece queue
         s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black",
-                                       ``          outline="grey")
+                                                 outline="grey")
 
         # Holder
         s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black",
@@ -76,7 +76,7 @@ class Board:
 
 
 
-    def rotate(self, piece_type, direction):
+    def rotate(self, direction):
         s = self
 
     def shift(self, direction):
