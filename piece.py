@@ -1,6 +1,7 @@
 class Piece:
      def __init__(self, piece_type):
           s = self
+          s.piece_type = piece_type
           #s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
           #s.piece_colors = {"I":"cyan", "J":"pink", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
           if piece_type == "I":

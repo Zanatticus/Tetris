@@ -1,6 +1,6 @@
 from piece import Piece
 import random
-
+import time
 
 class Board:
     """
@@ -14,23 +14,19 @@ class Board:
         s.game_screen = game_screen
         s.root = root
         
-        s.row = 0
-        s.column = 0
+        s.columns = 10
+        s.rows = 20
         s.holder = []
-        s.board_array = []
         s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
-        s.piece_colors = {"I":"cyan", "J":"pink", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
-        
-        s.piece_queue = []
-        for i in range(7):
-            s.piece_queue.append(s.get_random_piece())
+        s.piece_colors = {"I":"cyan", "J":"purple", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
+        s.board_array = [[None] * s.columns for i in range(s.rows)]
+        s.board_array[3][7] = "Z"
+        for row in s.board_array:
+            print(row)
+        s.piece_queue = [s.get_random_piece() for i in range(7)]    
         s.current_piece = s.get_random_piece()
-        
-        for i in range(10):
-            s.board_array.append([])
-            for j in range(20):
-                s.board_array[i].append("I")
 
+        s.spawn_piece()
 
     def display_board(self):
         """
@@ -40,18 +36,22 @@ class Board:
         s = self
         s.game_screen.delete("all")
         
-        for x in range(10):
-            for y in range(20):
-                s.row = x
-                s.column = y
+        for row in range(s.rows):
+            for col in range(s.columns): 
                 # Board array squares
-                if s.board_array[x][y] in s.piece_list:
-                    color = s.piece_colors[s.board_array[x][y]]
-                    s.game_screen.create_rectangle(54 + 50 * x, 54 + 50 * y, 96 + 50 * x, 96 + 50 * y, fill=color,
+                print(f"row = {row}")
+                print(f"col = {col}")
+                print(s.board_array[row][col])
+                if s.board_array[row][col] == None:
+                    color = "black"
+                else:
+                    color = s.piece_colors[s.board_array[row][col]]
+                    
+                s.game_screen.create_rectangle(54 + 50 * col, 54 + 50 * row, 96 + 50 * col, 96 + 50 * row, fill=color,
                                                  outline=color)
                 # Board array lines
-                s.game_screen.create_line(50 * (x + 1), 50 * (y + 1), 50 * 9, 50 * (y + 1))
-                s.game_screen.create_line(50 * (x + 1), 50 * (y + 1), 50 * (x + 1), 50 * 9)
+                s.game_screen.create_line(50 * (col + 1), 50 * (row + 1), 50 * 9, 50 * (row + 1))
+                s.game_screen.create_line(50 * (col + 1), 50 * (row + 1), 50 * (col + 1), 50 * 9)
         # Board array boundaries
         s.game_screen.create_line(50, 50 * 9, 50 * 9, 50 * 9)
         s.game_screen.create_line(50 * 9, 50, 50 * 9, 50 * 9)      
@@ -67,18 +67,25 @@ class Board:
     def get_next_piece(self):
         s = self
         s.current_piece = s.piece_queue.pop(0)
+        s.spawn_piece()
         s.piece_queue.append(s.get_random_piece())
 
     def get_random_piece(self):
         s = self
-        random_piece = s.piece_list[random.randint(0, 6)]
+        random_int = random.randint(0, 6)
+        random_piece = s.piece_list[random_int]
         return Piece(random_piece)
 
-
-
+    def spawn_piece(self):
+        s = self
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        s.display_board()
+        
     def rotate(self, direction):
         s = self
-
+        s.display_board()
+        
     def shift(self, direction):
         s = self
         if s.valid_movement(direction) == False:
@@ -90,7 +97,8 @@ class Board:
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = None
             square[0] = square[0] + direction
-            s.board_array[square[0]][square[1]] = s.current_piece.color
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        s.display_board()
             
     def soft_drop(self):
         s = self
@@ -100,7 +108,8 @@ class Board:
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = None
             square[1] = square[1] + 1
-            s.board_array[square[0]][square[1]] = s.current_piece.color
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        s.display_board()
         
     def hard_drop(self):
         s = self
@@ -110,8 +119,9 @@ class Board:
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = None
             square[1] = square[1] + 1
-            s.board_array[square[0]][square[1]] = s.current_piece.color
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.hard_drop()
+        s.display_board()
             
     def gravity(self):
         s = self
@@ -121,23 +131,26 @@ class Board:
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = None
             square[1] = square[1] + 1
-            s.board_array[square[0]][square[1]] = s.current_piece.color
-        s.game_screen.after(1, s.gravity)
-
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        print("test")
+        time.sleep(1)
+        s.gravity()
+        s.display_board()
+        
     def valid_movement(self, type_of_movement):
         if type_of_movement == "down":
-            pass
+            return True
         elif type_of_movement == "left":
-            pass
+            return True
         elif type_of_movement == "right":
-            pass
+            return True
         elif type_of_movement == "rotate":
-            pass
+            return True
 
     def place(self):
         s = self
         for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = s.current_piece.color
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.clear_line()
 
     def clear_line(self):
