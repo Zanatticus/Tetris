@@ -14,13 +14,17 @@ class Board:
         s = self
         s.game_screen = game_screen
         s.root = root
+        
         s.row = 0
         s.column = 0
         s.holder = []
         s.board_array = []
         s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
         s.piece_colors = {"I":"cyan", "J":"pink", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
+        
         s.piece_queue = []
+        for i in range(7):
+            s.piece_queue.append(s.get_random_piece())
         
         for i in range(10):
             s.board_array.append([])
@@ -81,17 +85,25 @@ class Board:
             pass
         if type_of_movement == "shift":
             if direction == "left":
-                for 
-            
-            
-            
+                pass
+            if direction == "right":
+                pass
         if type_of_movement == "soft_drop":
+            pass
+        if type_of_movement == "gravity":
             pass
     
     def gravity(self):
         s = self
         
+        
+        
+        
         s.game_screen.after(1, s.gravity)
+        
+        
+        
+        
         
     def hold(self, piece_type):
         s = self
@@ -109,7 +121,7 @@ class Board:
         s.piece_queue.append(s.get_random_piece())
     
     def get_random_piece(self):
-        piece_list = ["O", "I", "S", "Z", "L", "J", "T"]
+        piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
         return piece_list[random.randint(0, 6)]
     
     def clear_line(self):

@@ -1,4 +1,6 @@
 class Piece:
+    def __init__(self, coordinates, color)
+    
     L = [[1,0],
          [1,0],
          [1,1]]
