@@ -1,12 +1,11 @@
-#from logic import Logic
+from piece import Piece
 import random
+
 
 class Board:
     """
     Board class handles all the displaying of the board to the screen and everything else associated with the board.
     """
-    #logistics = Logic()
-
     def __init__(self, game_screen, root):
         """
         Initializes a 10x20 Tetris board
@@ -25,6 +24,7 @@ class Board:
         s.piece_queue = []
         for i in range(7):
             s.piece_queue.append(s.get_random_piece())
+        s.current_piece = s.get_random_piece()
         
         for i in range(10):
             s.board_array.append([])
@@ -58,72 +58,88 @@ class Board:
         
         # Piece queue
         s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black",
-                                                 outline="grey")
-        
+                                       ``          outline="grey")
+
         # Holder
         s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black",
                                                  outline="grey")
 
-        
-        
-
-
-    def rotate(self, piece_type, direction):
-        s = self
-        
-    def shift(self, piece_type, direction):
-        s = self
-    
-    def soft_drop(self):
-        s = self
-        
-    def hard_drop(self):
-        s = self
-    
-    def valid_movement(self, type_of_movement, direction=None):
-        if type_of_movement == "rotate":
-            pass
-        if type_of_movement == "shift":
-            if direction == "left":
-                pass
-            if direction == "right":
-                pass
-        if type_of_movement == "soft_drop":
-            pass
-        if type_of_movement == "gravity":
-            pass
-    
-    def gravity(self):
-        s = self
-        
-        
-        
-        
-        s.game_screen.after(1, s.gravity)
-        
-        
-        
-        
-        
-    def hold(self, piece_type):
-        s = self
-        if s.holder == []:
-            s.holder.append(piece_type)
-            s.get_next_piece()
-            return   
-        held_piece = s.holder.pop[0]
-        s.current_piece = held_piece
-        return held_piece
-    
     def get_next_piece(self):
         s = self
         s.current_piece = s.piece_queue.pop(0)
         s.piece_queue.append(s.get_random_piece())
-    
+
     def get_random_piece(self):
-        piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
-        return piece_list[random.randint(0, 6)]
-    
+        s = self
+        random_piece = s.piece_list[random.randint(0, 6)]
+        return Piece(random_piece)
+
+
+
+    def rotate(self, piece_type, direction):
+        s = self
+
+    def shift(self, direction):
+        s = self
+        if s.valid_movement(direction) == False:
+            return
+        if direction == "left":
+            direction = -1
+        elif direction == "right":
+            direction = 1    
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+            square[0] = square[0] + direction
+            s.board_array[square[0]][square[1]] = s.current_piece.color
+            
+    def soft_drop(self):
+        s = self
+        if s.valid_movement("down") == False:
+            s.place()
+            return
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+            square[1] = square[1] + 1
+            s.board_array[square[0]][square[1]] = s.current_piece.color
+        
+    def hard_drop(self):
+        s = self
+        if s.valid_movement("down") == False:
+            s.place()
+            return
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+            square[1] = square[1] + 1
+            s.board_array[square[0]][square[1]] = s.current_piece.color
+        s.hard_drop()
+            
+    def gravity(self):
+        s = self
+        if s.valid_movement("down") == False:
+            s.place()
+            return
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+            square[1] = square[1] + 1
+            s.board_array[square[0]][square[1]] = s.current_piece.color
+        s.game_screen.after(1, s.gravity)
+
+    def valid_movement(self, type_of_movement):
+        if type_of_movement == "down":
+            pass
+        elif type_of_movement == "left":
+            pass
+        elif type_of_movement == "right":
+            pass
+        elif type_of_movement == "rotate":
+            pass
+
+    def place(self):
+        s = self
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = s.current_piece.color
+        s.clear_line()
+
     def clear_line(self):
         s = self
         last_row = s.board_array[-1]
@@ -135,7 +151,15 @@ class Board:
         clear_counter = 1
         return clear_counter + s.clear_line()  
         
-            
+    def hold(self):
+        s = self
+        if s.holder == []:
+            s.holder.append(s.current_piece)
+            s.get_next_piece()
+            return   
+        held_piece = s.holder.pop[0]
+        s.current_piece = held_piece
+        return held_piece            
             
       
             
@@ -160,19 +184,19 @@ class Board:
         elif button_pressed.lower() == "q":
             s.root.destroy()
         elif button_pressed.lower() == "j":
-            s.rotate(s.current_piece, "counter_clockwise")
+            s.rotate("counter_clockwise")
         elif button_pressed.lower() == "l":
-            s.rotate(s.current_piece, "clockwise")
+            s.rotate("clockwise")
         elif button_pressed.lower() == "a":
-            s.shift(s.current_piece, "left")
+            s.shift("left")
         elif button_pressed.lower() == "d":
-            s.shift(s.current_piece, "right")
+            s.shift("right")
         elif button_pressed.lower() == "i":
-            s.hold_piece(s.current_piece)
+            s.hold_piece()
         elif button_pressed.lower() == "w":
-            s.hard_drop(s.current_piece)   
+            s.hard_drop()   
         elif button_pressed.lower() == "s":
-            s.soft_drop(s.current_piece)            
+            s.soft_drop()            
     
     def play_new_game(self):
         """
