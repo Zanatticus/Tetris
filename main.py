@@ -1,5 +1,6 @@
 from board import *
 from tkinter import *
+import time
 
 root = Tk()
 # Creates the window size and color which the game will be played on
@@ -10,10 +11,11 @@ game_screen.pack()
 myBoard = Board(game_screen, root)
 myBoard.display_board()
 # Perpetually move pieces down one square every second
-#myBoard.gravity()
+
 # Allows for mouse clicks and keyboard inputs and focuses these inputs onto game_screen
 game_screen.bind("<Key>", myBoard.keyboard_buttons)
 game_screen.focus_set()
 
 root.title("Tetris")
+root.after(0, myBoard.gravity())
 root.mainloop()

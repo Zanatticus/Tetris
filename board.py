@@ -13,16 +13,18 @@ class Board:
         s = self
         s.game_screen = game_screen
         s.root = root
-        
-        s.columns = 10
         s.rows = 20
+        s.columns = 10
+        s.queue_rows = 4
+        s.queue_columns = 10
         s.holder = []
         s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
         s.piece_colors = {"I":"cyan", "J":"purple", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
         s.board_array = [[None] * s.columns for i in range(s.rows)]
-        s.board_array[3][7] = "Z"
-        for row in s.board_array:
-            print(row)
+        s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
+        #s.board_array[3][7] = "Z"
+        # for row in s.board_array:
+        #     print(row)
         s.piece_queue = [s.get_random_piece() for i in range(7)]    
         s.current_piece = s.get_random_piece()
 
@@ -39,9 +41,6 @@ class Board:
         for row in range(s.rows):
             for col in range(s.columns): 
                 # Board array squares
-                print(f"row = {row}")
-                print(f"col = {col}")
-                print(s.board_array[row][col])
                 if s.board_array[row][col] == None:
                     color = "black"
                 else:
@@ -59,7 +58,15 @@ class Board:
         # Piece queue
         s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black",
                                                  outline="grey")
-
+        counter = 0
+        for piece in s.piece_queue:
+            counter = counter + 1
+            for row in range(3):
+                for col in range(3): 
+            s.game_screen.create_rectangle(54 + 50 * col, 54 + 50 * row, 96 + 50 * col, 96 + 50 * row, fill=color,
+                                                 outline=color)
+            
+            
         # Holder
         s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black",
                                                  outline="grey")
@@ -69,7 +76,8 @@ class Board:
         s.current_piece = s.piece_queue.pop(0)
         s.spawn_piece()
         s.piece_queue.append(s.get_random_piece())
-
+        s.queue_array[][] = 
+        
     def get_random_piece(self):
         s = self
         random_int = random.randint(0, 6)
@@ -90,14 +98,21 @@ class Board:
         s = self
         if s.valid_movement(direction) == False:
             return
+        piece_type = s.current_piece.piece_type
         if direction == "left":
             direction = -1
+            piece_type = s.current_piece.piece_type
+            for square in s.current_piece.coordinates:
+                s.board_array[square[0]][square[1]] = None
+                square[1] = square[1] + direction
+                s.board_array[square[0]][square[1]] = piece_type
         elif direction == "right":
             direction = 1    
-        for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = None
-            square[0] = square[0] + direction
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+            piece_type = s.current_piece.piece_type
+            for square in reversed(s.current_piece.coordinates):
+                s.board_array[square[0]][square[1]] = None
+                square[1] = square[1] + direction
+                s.board_array[square[0]][square[1]] = piece_type
         s.display_board()
             
     def soft_drop(self):
@@ -105,10 +120,11 @@ class Board:
         if s.valid_movement("down") == False:
             s.place()
             return
-        for square in s.current_piece.coordinates:
+        piece_type = s.current_piece.piece_type
+        for square in reversed(s.current_piece.coordinates):
             s.board_array[square[0]][square[1]] = None
-            square[1] = square[1] + 1
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+            square[0] = square[0] + 1
+            s.board_array[square[0]][square[1]] = piece_type
         s.display_board()
         
     def hard_drop(self):
@@ -116,10 +132,11 @@ class Board:
         if s.valid_movement("down") == False:
             s.place()
             return
-        for square in s.current_piece.coordinates:
+        piece_type = s.current_piece.piece_type
+        for square in reversed(s.current_piece.coordinates):
             s.board_array[square[0]][square[1]] = None
-            square[1] = square[1] + 1
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+            square[0] = square[0] + 1
+            s.board_array[square[0]][square[1]] = piece_type
         s.hard_drop()
         s.display_board()
             
@@ -128,15 +145,16 @@ class Board:
         if s.valid_movement("down") == False:
             s.place()
             return
-        for square in s.current_piece.coordinates:
+        piece_type = s.current_piece.piece_type
+        for square in reversed(s.current_piece.coordinates):
             s.board_array[square[0]][square[1]] = None
-            square[1] = square[1] + 1
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
-        print("test")
-        time.sleep(1)
-        s.gravity()
+            square[0] = square[0] + 1
+            s.board_array[square[0]][square[1]] = piece_type
         s.display_board()
-        
+        s.root.after(1000, s.gravity)     
+    
+    
+    # TODO    
     def valid_movement(self, type_of_movement):
         if type_of_movement == "down":
             return True
@@ -146,6 +164,8 @@ class Board:
             return True
         elif type_of_movement == "rotate":
             return True
+
+
 
     def place(self):
         s = self
@@ -164,7 +184,7 @@ class Board:
         clear_counter = 1
         return clear_counter + s.clear_line()  
         
-    def hold(self):
+    def hold_piece(self):
         s = self
         if s.holder == []:
             s.holder.append(s.current_piece)
@@ -217,7 +237,6 @@ class Board:
         :return: None
         """
         s = self
-        s.logistics.play_new_game()
         s.game_screen.delete("all")
         s.__init__(s.game_screen, s.root)
         s.display_board()
