@@ -195,11 +195,21 @@ class Board:
     
     # TODO    
     def valid_movement(self, type_of_movement):
+        s = self
         if type_of_movement == "down":
+            for square in s.current_piece.coordinates:
+                if square[0] + 1 > 19:
+                    return False
             return True
         elif type_of_movement == "left":
+            for square in s.current_piece.coordinates:
+                if square[1] - 1 < 0:
+                    return False
             return True
         elif type_of_movement == "right":
+            for square in s.current_piece.coordinates:
+                if square[1] + 1 > 9:
+                    return False
             return True
         elif type_of_movement == "rotate":
             return True
@@ -212,7 +222,7 @@ class Board:
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         number_of_clears = s.clear_line()
-        s.points = s.points[number_of_clears]
+        s.points += clear_points[number_of_clears]
         
         
     def clear_line(self):
