@@ -11,7 +11,7 @@ class Piece:
           if piece_type == "J":
                s.color = "pink"
                s.coordinates = [[0,3], [1,3], [1,4], [1,5]]
-               s.queue_coordinates = [[0,0], [1,1], [1,2], [1,3]]
+               s.queue_coordinates = [[0,0], [1,0], [1,1], [1,2]]
           if piece_type == "L":
                s.color = "orange"
                s.coordinates = [[0,5], [1,3], [1,4], [1,5]]
@@ -19,7 +19,7 @@ class Piece:
           if piece_type == "O":
                s.color = "yellow"
                s.coordinates = [[0,4], [0,5], [1,4], [1,5]]
-               s.queue_coordinates = [[0,0], [0,1], [1,0], [1,1]]
+               s.queue_coordinates = [[0,1], [0,2], [1,1], [1,2]]
           if piece_type == "S":
                s.color = "red"
                s.coordinates = [[0,4], [0,5], [1,3], [1,4]]

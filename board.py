@@ -13,21 +13,26 @@ class Board:
         s = self
         s.game_screen = game_screen
         s.root = root
+        
+        s.points = 0
         s.rows = 20
         s.columns = 10
-        s.queue_rows = 4
-        s.queue_columns = 10
+        s.queue_rows = 11
+        s.queue_columns = 4
+        s.holder_rows = 2
+        s.holder_columns = 4
         s.holder = []
         s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
         s.piece_colors = {"I":"cyan", "J":"purple", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
         s.board_array = [[None] * s.columns for i in range(s.rows)]
         s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
+        s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
         #s.board_array[3][7] = "Z"
         # for row in s.board_array:
         #     print(row)
         s.piece_queue = [s.get_random_piece() for i in range(7)]    
         s.current_piece = s.get_random_piece()
-
+        s.update_queue_array()
         s.spawn_piece()
 
     def display_board(self):
@@ -46,8 +51,7 @@ class Board:
                 else:
                     color = s.piece_colors[s.board_array[row][col]]
                     
-                s.game_screen.create_rectangle(54 + 50 * col, 54 + 50 * row, 96 + 50 * col, 96 + 50 * row, fill=color,
-                                                 outline=color)
+                s.game_screen.create_rectangle(54 + 50 * col, 54 + 50 * row, 96 + 50 * col, 96 + 50 * row, fill=color, outline=color)
                 # Board array lines
                 s.game_screen.create_line(50 * (col + 1), 50 * (row + 1), 50 * 9, 50 * (row + 1))
                 s.game_screen.create_line(50 * (col + 1), 50 * (row + 1), 50 * (col + 1), 50 * 9)
@@ -56,27 +60,62 @@ class Board:
         s.game_screen.create_line(50 * 9, 50, 50 * 9, 50 * 9)      
         
         # Piece queue
-        s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black",
-                                                 outline="grey")
-        counter = 0
-        for piece in s.piece_queue:
-            counter = counter + 1
-            for row in range(3):
-                for col in range(3): 
-            s.game_screen.create_rectangle(54 + 50 * col, 54 + 50 * row, 96 + 50 * col, 96 + 50 * row, fill=color,
-                                                 outline=color)
-            
-            
-        # Holder
-        s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black",
-                                                 outline="grey")
+        #s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black", outline="grey")
+        for row in range(s.queue_rows):
+            for col in range(s.queue_columns): 
+                if s.queue_array[row][col] == None:
+                    color = "black"
+                else:
+                    color = s.piece_colors[s.queue_array[row][col]]
+                s.game_screen.create_rectangle(700 + 50 * col, 100 + 50 * row, 742 + 50 * col, 142 + 50 * row, fill=color, outline=color)
 
+        # Holder
+        #s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black", outline="grey")
+        for row in range(s.holder_rows):
+            for col in range(s.holder_columns): 
+                if s.holder_array[row][col] == None:
+                    color = "black"
+                else:
+                    color = s.piece_colors[s.holder_array[row][col]]
+                s.game_screen.create_rectangle(700 + 50 * col, 700 + 50 * row, 742 + 50 * col, 742 + 50 * row, fill=color, outline=color)
+    
+    
+    def hold_piece(self):
+        s = self
+        if s.holder == []:
+            s.holder.append(s.current_piece)
+            s.get_next_piece()
+            s.update_holder_array()
+            return   
+        held_piece = s.holder.pop(0)
+        s.holder.append(s.current_piece)
+        s.current_piece = held_piece
+        s.update_holder_array()
+                      
+    def update_holder_array(self):
+        s = self
+        s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
+        for square in s.holder[0].queue_coordinates:
+            s.holder_array[square[0]][square[1]] = s.holder[0].piece_type
+    
+    def update_queue_array(self):
+        s = self
+        counter = 0
+        s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
+        for piece in s.piece_queue:
+            if counter == 4:
+                return
+            for square in piece.queue_coordinates:
+                s.queue_array[square[0] + 3*counter][square[1]] = piece.piece_type
+            counter += 1        
+    
     def get_next_piece(self):
         s = self
         s.current_piece = s.piece_queue.pop(0)
         s.spawn_piece()
         s.piece_queue.append(s.get_random_piece())
-        s.queue_array[][] = 
+        s.update_queue_array()
+        
         
     def get_random_piece(self):
         s = self
@@ -169,10 +208,13 @@ class Board:
 
     def place(self):
         s = self
+        clear_points = [0, 100, 300, 500, 800]
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = s.current_piece.piece_type
-        s.clear_line()
-
+        number_of_clears = s.clear_line()
+        s.points = s.points[number_of_clears]
+        
+        
     def clear_line(self):
         s = self
         last_row = s.board_array[-1]
@@ -184,17 +226,8 @@ class Board:
         clear_counter = 1
         return clear_counter + s.clear_line()  
         
-    def hold_piece(self):
-        s = self
-        if s.holder == []:
-            s.holder.append(s.current_piece)
-            s.get_next_piece()
-            return   
-        held_piece = s.holder.pop[0]
-        s.current_piece = held_piece
-        return held_piece            
-            
-      
+
+                
             
             
     def keyboard_buttons(self, event):
