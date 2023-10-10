@@ -6,6 +6,7 @@ class Board:
     """
     Board class handles all the displaying of the board to the screen and everything else associated with the board.
     """
+    gravity_count = 0
     def __init__(self, game_screen, root):
         """
         Initializes a 10x20 Tetris board
@@ -27,13 +28,32 @@ class Board:
         s.board_array = [[None] * s.columns for i in range(s.rows)]
         s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
         s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
-        #s.board_array[3][7] = "Z"
-        # for row in s.board_array:
-        #     print(row)
         s.piece_queue = [s.get_random_piece() for i in range(7)]    
         s.current_piece = s.get_random_piece()
         s.update_queue_array()
         s.spawn_piece()
+        s.game_over = 0
+        
+    def reset(self):
+        s = self
+        s.points = 0
+        s.rows = 20
+        s.columns = 10
+        s.queue_rows = 11
+        s.queue_columns = 4
+        s.holder_rows = 2
+        s.holder_columns = 4
+        s.holder = []
+        s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
+        s.piece_colors = {"I":"cyan", "J":"purple", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
+        s.board_array = [[None] * s.columns for i in range(s.rows)]
+        s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
+        s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
+        s.piece_queue = [s.get_random_piece() for i in range(7)]    
+        s.current_piece = s.get_random_piece()
+        s.update_queue_array()
+        s.spawn_piece()
+        s.game_over = 0
 
     def display_board(self):
         """
@@ -79,25 +99,27 @@ class Board:
                     color = s.piece_colors[s.holder_array[row][col]]
                 s.game_screen.create_rectangle(700 + 50 * col, 700 + 50 * row, 742 + 50 * col, 742 + 50 * row, fill=color, outline=color)
     
-    
     def hold_piece(self):
         s = self
-        if s.holder == []:
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+            s.current_piece.reset_coordinates()
+        if s.holder != []:
+            held_piece = s.holder.pop(0)
             s.holder.append(s.current_piece)
-            s.get_next_piece()
-            s.update_holder_array()
-            return   
-        held_piece = s.holder.pop(0)
-        s.holder.append(s.current_piece)
-        s.current_piece = held_piece
+            s.current_piece = held_piece
+        if s.holder == []:
+            s.holder.append(s.current_piece)    
+            s.get_next_piece()  
         s.update_holder_array()
-                      
+        s.spawn_piece()
+               
     def update_holder_array(self):
         s = self
         s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
         for square in s.holder[0].queue_coordinates:
             s.holder_array[square[0]][square[1]] = s.holder[0].piece_type
-    
+       
     def update_queue_array(self):
         s = self
         counter = 0
@@ -116,7 +138,6 @@ class Board:
         s.piece_queue.append(s.get_random_piece())
         s.update_queue_array()
         
-        
     def get_random_piece(self):
         s = self
         random_int = random.randint(0, 6)
@@ -126,11 +147,53 @@ class Board:
     def spawn_piece(self):
         s = self
         for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+            if s.board_array[square[0]][square[1]] != None:
+                s.end_game()
+                return
+        for square in s.current_piece.coordinates:
+                s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.display_board()
         
-    def rotate(self, direction):
+    def end_game(self):
         s = self
+        s.game_screen.delete("all")
+        s.game_screen.create_text(250, 470, text="GAME OVER! Press 'R' to restart or 'Q' to quit.",
+                                         fill="black",
+                                         font=40)
+        s.game_over = 1
+    
+    def rotate_right(self):
+        s = self
+        if s.valid_movement("rotate_right") == False:
+            return
+        
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+        rotated_piece = []
+        pivot_row, pivot_col = s.current_piece.pivot
+        for [row, col] in s.current_piece:
+            # Calculate the new coordinates after rotation around the pivot point
+            new_row = pivot_row + (col - pivot_col)
+            new_col = pivot_col - (row - pivot_row)
+            rotated_piece.append([new_row, new_col])
+        s.current_piece.coordinates = rotated_piece
+        s.display_board()
+        
+    def rotate_left(self):
+        s = self
+        if s.valid_movement("rotate_left") == False:
+            return
+        
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
+        rotated_piece = []
+        pivot_row, pivot_col = s.current_piece.pivot
+        for [row, col] in s.current_piece:
+            # Calculate the new coordinates after rotation around the pivot point
+            new_row = pivot_row - (col - pivot_col)
+            new_col = pivot_col + (row - pivot_row)
+            rotated_piece.append([new_row, new_col])
+        s.current_piece.coordinates = rotated_piece
         s.display_board()
         
     def shift(self, direction):
@@ -181,6 +244,9 @@ class Board:
             
     def gravity(self):
         s = self
+        if s.game_over == 1:
+            s.root.after(1000, s.gravity)
+            return
         if s.valid_movement("down") == False:
             s.place()
             return
@@ -193,26 +259,36 @@ class Board:
         s.root.after(1000, s.gravity)     
     
     
-    # TODO    
+    # TODO ROTATION
     def valid_movement(self, type_of_movement):
         s = self
-        if type_of_movement == "down":
-            for square in s.current_piece.coordinates:
-                if square[0] + 1 > 19:
+        current_coords = s.current_piece.coordinates
+        for square in current_coords:
+            row = square[0]
+            col = square[1]
+            if type_of_movement == "down":
+                if row + 1 > 19:
                     return False
-            return True
-        elif type_of_movement == "left":
-            for square in s.current_piece.coordinates:
-                if square[1] - 1 < 0:
+                if s.board_array[row + 1][col] != None and [row + 1, col] not in current_coords:
                     return False
-            return True
-        elif type_of_movement == "right":
-            for square in s.current_piece.coordinates:
-                if square[1] + 1 > 9:
+                
+            elif type_of_movement == "left":
+                if col - 1 < 0:
                     return False
-            return True
-        elif type_of_movement == "rotate":
-            return True
+                if s.board_array[row][col - 1] != None and [row, col - 1] not in current_coords:
+                    return False
+                
+            elif type_of_movement == "right":
+                if col + 1 > 9:
+                    return False
+                if s.board_array[row][col + 1] != None and [row, col + 1] not in current_coords:
+                    return False
+                
+            elif type_of_movement == "rotate_left":
+                return True
+            elif type_of_movement == "rotate_right":
+                return True
+        return True
 
 
 
@@ -222,31 +298,37 @@ class Board:
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         number_of_clears = s.clear_line()
-        s.points += clear_points[number_of_clears]
-        
+        if number_of_clears:
+            s.points += clear_points[number_of_clears]
+            print(s.points)
+        del s.current_piece
+        s.get_next_piece()
         
     def clear_line(self):
         s = self
-        last_row = s.board_array[-1]
         clear_counter = 0
-        for square in last_row:
-            if square == None:
-                return clear_counter
-        s.board_array = [None] * 10 + s.board_array[:-1]
-        clear_counter = 1
-        return clear_counter + s.clear_line()  
-        
-
-                
-            
+        for row in s.board_array:
+            square_counter = 0
+            for square in row:
+                if square == None:
+                    break
+                square_counter += 1
+            if square_counter == 10:
+                s.board_array.remove(row)
+                s.board_array.insert(0, [None] * 10)
+                clear_counter += 1        
+        if clear_counter == 0:
+            return 0
+        else:
+            return clear_counter + s.clear_line()
             
     def keyboard_buttons(self, event):
         """
         Handles keyboard input to either:
             a) restart
             b) quit
-            c) move
-            d) rotate
+            c) rotate
+            d) shift
             e) hold
             f) hard drop
             g) soft drop
@@ -260,9 +342,9 @@ class Board:
         elif button_pressed.lower() == "q":
             s.root.destroy()
         elif button_pressed.lower() == "j":
-            s.rotate("counter_clockwise")
+            s.rotate_left()
         elif button_pressed.lower() == "l":
-            s.rotate("clockwise")
+            s.rotate_right()
         elif button_pressed.lower() == "a":
             s.shift("left")
         elif button_pressed.lower() == "d":
@@ -281,5 +363,6 @@ class Board:
         """
         s = self
         s.game_screen.delete("all")
-        s.__init__(s.game_screen, s.root)
+        s.reset()
+        s.gravity()
         s.display_board()

@@ -4,9 +4,11 @@ class Piece:
           s.piece_type = piece_type
           #s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
           #s.piece_colors = {"I":"cyan", "J":"pink", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
+          s.last_held = 0
+          
           if piece_type == "I":
                s.color = "cyan"
-               s.coordinates = [[0,3], [0,4], [0,5], [0,6]]
+               s.coordinates = [[1,3], [1,4], [1,5], [1,6]]
                s.queue_coordinates = [[0,0], [0,1], [0,2], [0,3]]
           if piece_type == "J":
                s.color = "pink"
@@ -33,5 +35,19 @@ class Piece:
                s.coordinates = [[0,3], [0,4], [1,4], [1,5]]
                s.queue_coordinates = [[0,0], [0,1], [1,1], [1,2]]  
 
-
-     
+     def reset_coordinates(self):
+          s = self
+          if s.piece_type == "I":
+               s.coordinates = [[1,3], [1,4], [1,5], [1,6]]
+          if s.piece_type == "J":
+               s.coordinates = [[0,3], [1,3], [1,4], [1,5]]
+          if s.piece_type == "L":
+               s.coordinates = [[0,5], [1,3], [1,4], [1,5]]
+          if s.piece_type == "O":
+               s.coordinates = [[0,4], [0,5], [1,4], [1,5]]
+          if s.piece_type == "S":
+               s.coordinates = [[0,4], [0,5], [1,3], [1,4]]
+          if s.piece_type == "T":
+               s.coordinates = [[0,4], [1,3], [1,4], [1,5]]
+          if s.piece_type == "Z":
+               s.coordinates = [[0,3], [0,4], [1,4], [1,5]]
