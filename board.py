@@ -164,6 +164,10 @@ class Board:
     
     def rotate_right(self):
         s = self
+        if s.current_piece.piece_type == "O":
+            return
+        if s.current_piece.piece_type == "I":
+             
         if s.valid_movement("rotate_right") == False:
             return
         
@@ -181,6 +185,7 @@ class Board:
         
     def rotate_left(self):
         s = self
+        
         if s.valid_movement("rotate_left") == False:
             return
         
