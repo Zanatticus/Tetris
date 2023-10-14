@@ -162,44 +162,45 @@ class Board:
                                          font=40)
         s.game_over = 1
     
-    def rotate_right(self):
+    def rotate_piece(self, direction):
         s = self
-        if s.current_piece.piece_type == "O":
-            return
-        if s.current_piece.piece_type == "I":
-             
-        if s.valid_movement("rotate_right") == False:
-            return
-        
+        # Calculate the center of the piece
+        row_center = sum(row for [row, col] in s.current_piece.coordinates) / len(s.current_piece.coordinates)
+        col_center = sum(col for [row, col] in s.current_piece.coordinates) / len(s.current_piece.coordinates)
+
+        # Determine direction of rotation
+        if direction == "clockwise":
+            direction = 1
+        if direction == "counter-clockwise":
+            direction = -1
+            
+        # Rotate each block of the piece
+        rotated_piece = []
+        for [row, col] in s.current_piece.coordinates:
+            # Translate block to origin
+            row -= row_center
+            col -= col_center
+            
+            # Rotate block
+            row_new = col * (direction)
+            col_new = -row * (direction)
+
+            # Translate block back to center
+            row_new += row_center
+            col_new += col_center
+            
+            # Append block to rotated piece
+            rotated_piece.append([round(row_new), round(col_new)])
+        for square in rotated_piece:
+            if s.board_array[square[0]][square[1]] != None or (0 > square[0] > 19) or (0 > square[1] > 9):
+                return False
         for square in s.current_piece.coordinates:
             s.board_array[square[0]][square[1]] = None
-        rotated_piece = []
-        pivot_row, pivot_col = s.current_piece.pivot
-        for [row, col] in s.current_piece:
-            # Calculate the new coordinates after rotation around the pivot point
-            new_row = pivot_row + (col - pivot_col)
-            new_col = pivot_col - (row - pivot_row)
-            rotated_piece.append([new_row, new_col])
         s.current_piece.coordinates = rotated_piece
-        s.display_board()
-        
-    def rotate_left(self):
-        s = self
-        
-        if s.valid_movement("rotate_left") == False:
-            return
-        
         for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = None
-        rotated_piece = []
-        pivot_row, pivot_col = s.current_piece.pivot
-        for [row, col] in s.current_piece:
-            # Calculate the new coordinates after rotation around the pivot point
-            new_row = pivot_row - (col - pivot_col)
-            new_col = pivot_col + (row - pivot_row)
-            rotated_piece.append([new_row, new_col])
-        s.current_piece.coordinates = rotated_piece
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.display_board()
+        
         
     def shift(self, direction):
         s = self
@@ -347,9 +348,9 @@ class Board:
         elif button_pressed.lower() == "q":
             s.root.destroy()
         elif button_pressed.lower() == "j":
-            s.rotate_left()
+            s.rotate_piece("counter-clockwise")
         elif button_pressed.lower() == "l":
-            s.rotate_right()
+            s.rotate_piece("clockwise")
         elif button_pressed.lower() == "a":
             s.shift("left")
         elif button_pressed.lower() == "d":
