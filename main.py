@@ -4,7 +4,7 @@ import time
 
 root = Tk()
 # Creates the window size and color which the game will be played on
-game_screen = Canvas(root, width=1500, height=1500, background="grey", highlightthickness=0)
+game_screen = Canvas(root, width=1000, height=1500, background="grey", highlightthickness=0)
 game_screen.pack()
 
 # Create a Board object and display it to start the game
@@ -17,5 +17,5 @@ game_screen.bind("<Key>", myBoard.keyboard_buttons)
 game_screen.focus_set()
 
 root.title("Tetris")
-root.after(0, myBoard.gravity())
+#root.after(0, myBoard.gravity())
 root.mainloop()

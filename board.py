@@ -33,6 +33,8 @@ class Board:
         s.update_queue_array()
         s.spawn_piece()
         s.game_over = 0
+        root.after(0, s.gravity())
+
         
     def reset(self):
         s = self
@@ -101,24 +103,24 @@ class Board:
     
     def hold_piece(self):
         s = self
-        for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = None
+        for [row, col] in s.current_piece.coordinates:
+            s.board_array[row][col] = None
             s.current_piece.reset_coordinates()
         if s.holder != []:
             held_piece = s.holder.pop(0)
             s.holder.append(s.current_piece)
             s.current_piece = held_piece
+            s.spawn_piece
         if s.holder == []:
             s.holder.append(s.current_piece)    
             s.get_next_piece()  
         s.update_holder_array()
-        s.spawn_piece()
                
     def update_holder_array(self):
         s = self
         s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
-        for square in s.holder[0].queue_coordinates:
-            s.holder_array[square[0]][square[1]] = s.holder[0].piece_type
+        for [row, col] in s.holder[0].queue_coordinates:
+            s.holder_array[row][col] = s.holder[0].piece_type
        
     def update_queue_array(self):
         s = self
@@ -127,8 +129,8 @@ class Board:
         for piece in s.piece_queue:
             if counter == 4:
                 return
-            for square in piece.queue_coordinates:
-                s.queue_array[square[0] + 3*counter][square[1]] = piece.piece_type
+            for [row, col] in piece.queue_coordinates:
+                s.queue_array[row + 3*counter][col] = piece.piece_type
             counter += 1        
     
     def get_next_piece(self):
@@ -146,12 +148,12 @@ class Board:
 
     def spawn_piece(self):
         s = self
-        for square in s.current_piece.coordinates:
-            if s.board_array[square[0]][square[1]] != None:
+        for [row, col] in s.current_piece.coordinates:
+            if s.board_array[row][col] != None:
                 s.end_game()
                 return
-        for square in s.current_piece.coordinates:
-                s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        for [row, col] in s.current_piece.coordinates:
+                s.board_array[row][col] = s.current_piece.piece_type
         s.display_board()
         
     def end_game(self):
@@ -164,114 +166,131 @@ class Board:
     
     def rotate_piece(self, direction):
         s = self
-        # Calculate the center of the piece
-        row_center = sum(row for [row, col] in s.current_piece.coordinates) / len(s.current_piece.coordinates)
-        col_center = sum(col for [row, col] in s.current_piece.coordinates) / len(s.current_piece.coordinates)
-
-        # Determine direction of rotation
+        if s.current_piece.position != None:
+            s.current_piece.position = (s.current_piece.position + 1) % 4
+        if s.current_piece.piece_type == "O":
+            return
+        
+        rotated_piece = []
+        pivot_row, pivot_col = s.current_piece.coordinates[s.current_piece.pivot]
+        row_modifier = 0
+        column_modifier = 0
+        
         if direction == "clockwise":
             direction = 1
-        if direction == "counter-clockwise":
+            if s.current_piece.piece_type == "I":
+                if s.current_piece.position == 0:
+                    row_modifier = 1 
+                if s.current_piece.position == 1:
+                    column_modifier = -1
+                if s.current_piece.position == 2:
+                    row_modifier = -1 
+                if s.current_piece.position == 3:
+                    column_modifier = 1
+        elif direction == "counter-clockwise":
             direction = -1
-            
-        # Rotate each block of the piece
-        rotated_piece = []
+            if s.current_piece.piece_type == "I":
+                if s.current_piece.position == 0:
+                    column_modifier = -1
+                if s.current_piece.position == 1:
+                    row_modifier = 1
+                if s.current_piece.position == 2:
+                    column_modifier = 1 
+                if s.current_piece.position == 3:
+                    row_modifier = -1
+        
         for [row, col] in s.current_piece.coordinates:
-            # Translate block to origin
-            row -= row_center
-            col -= col_center
-            
-            # Rotate block
-            row_new = col * (direction)
-            col_new = -row * (direction)
-
-            # Translate block back to center
-            row_new += row_center
-            col_new += col_center
-            
-            # Append block to rotated piece
-            rotated_piece.append([round(row_new), round(col_new)])
-        for square in rotated_piece:
-            if s.board_array[square[0]][square[1]] != None or (0 > square[0] > 19) or (0 > square[1] > 9):
-                return False
-        for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = None
+            # Calculate the new coordinates after rotation around the pivot point
+            new_row = pivot_row + (col - pivot_col) * direction
+            new_col = pivot_col - (row - pivot_row) * direction   
+            rotated_piece.append([new_row + row_modifier, new_col + column_modifier])
+        
+        if s.valid_rotation(rotated_piece) == False:
+            return
+        for [row, col] in s.current_piece.coordinates:
+            s.board_array[row][col] = None
         s.current_piece.coordinates = rotated_piece
-        for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        for [row, col] in s.current_piece.coordinates:
+            s.board_array[row][col] = s.current_piece.piece_type
         s.display_board()
         
         
+    def valid_rotation(self, rotated_piece):
+        s = self
+        for [row, col] in rotated_piece:
+            if [row, col] in s.current_piece.coordinates:
+                continue
+            if row > 19 or row < 0:
+                return False
+            if col > 9 or col < 0:
+                return False
+            if s.board_array[row][col] != None:
+                return False
+        return True
+
+        
     def shift(self, direction):
         s = self
-        if s.valid_movement(direction) == False:
+        if s.valid_shift(direction) == False:
             return
-        piece_type = s.current_piece.piece_type
+        for square in s.current_piece.coordinates:
+            s.board_array[square[0]][square[1]] = None
         if direction == "left":
-            direction = -1
-            piece_type = s.current_piece.piece_type
             for square in s.current_piece.coordinates:
-                s.board_array[square[0]][square[1]] = None
-                square[1] = square[1] + direction
-                s.board_array[square[0]][square[1]] = piece_type
+                square[1] = square[1] - 1
+                s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         elif direction == "right":
-            direction = 1    
-            piece_type = s.current_piece.piece_type
             for square in reversed(s.current_piece.coordinates):
-                s.board_array[square[0]][square[1]] = None
-                square[1] = square[1] + direction
-                s.board_array[square[0]][square[1]] = piece_type
+                square[1] = square[1] + 1
+                s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.display_board()
             
     def soft_drop(self):
         s = self
-        if s.valid_movement("down") == False:
+        if s.valid_shift("down") == False:
             s.place()
             return
-        piece_type = s.current_piece.piece_type
         for square in reversed(s.current_piece.coordinates):
             s.board_array[square[0]][square[1]] = None
+        for square in reversed(s.current_piece.coordinates):
             square[0] = square[0] + 1
-            s.board_array[square[0]][square[1]] = piece_type
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.display_board()
         
     def hard_drop(self):
         s = self
-        if s.valid_movement("down") == False:
+        if s.valid_shift("down") == False:
             s.place()
             return
-        piece_type = s.current_piece.piece_type
         for square in reversed(s.current_piece.coordinates):
             s.board_array[square[0]][square[1]] = None
             square[0] = square[0] + 1
-            s.board_array[square[0]][square[1]] = piece_type
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.hard_drop()
         s.display_board()
             
     def gravity(self):
         s = self
+        print(s.game_over)
         if s.game_over == 1:
+            return
+        if s.valid_shift("down") == False:
+            s.place()
+            s.display_board()
             s.root.after(1000, s.gravity)
             return
-        if s.valid_movement("down") == False:
-            s.place()
-            return
-        piece_type = s.current_piece.piece_type
         for square in reversed(s.current_piece.coordinates):
             s.board_array[square[0]][square[1]] = None
+        for square in reversed(s.current_piece.coordinates):
             square[0] = square[0] + 1
-            s.board_array[square[0]][square[1]] = piece_type
+            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
         s.display_board()
         s.root.after(1000, s.gravity)     
     
-    
-    # TODO ROTATION
-    def valid_movement(self, type_of_movement):
+    def valid_shift(self, type_of_movement):
         s = self
         current_coords = s.current_piece.coordinates
-        for square in current_coords:
-            row = square[0]
-            col = square[1]
+        for [row, col] in current_coords:
             if type_of_movement == "down":
                 if row + 1 > 19:
                     return False
@@ -289,20 +308,13 @@ class Board:
                     return False
                 if s.board_array[row][col + 1] != None and [row, col + 1] not in current_coords:
                     return False
-                
-            elif type_of_movement == "rotate_left":
-                return True
-            elif type_of_movement == "rotate_right":
-                return True
         return True
-
-
 
     def place(self):
         s = self
         clear_points = [0, 100, 300, 500, 800]
-        for square in s.current_piece.coordinates:
-            s.board_array[square[0]][square[1]] = s.current_piece.piece_type
+        for [row, col] in s.current_piece.coordinates:
+            s.board_array[row][col] = s.current_piece.piece_type
         number_of_clears = s.clear_line()
         if number_of_clears:
             s.points += clear_points[number_of_clears]
@@ -314,12 +326,12 @@ class Board:
         s = self
         clear_counter = 0
         for row in s.board_array:
-            square_counter = 0
-            for square in row:
-                if square == None:
+            sqsuare_counter = 0
+            for sqsuare in row:
+                if sqsuare == None:
                     break
-                square_counter += 1
-            if square_counter == 10:
+                sqsuare_counter += 1
+            if sqsuare_counter == 10:
                 s.board_array.remove(row)
                 s.board_array.insert(0, [None] * 10)
                 clear_counter += 1        
@@ -370,5 +382,4 @@ class Board:
         s = self
         s.game_screen.delete("all")
         s.reset()
-        s.gravity()
         s.display_board()
