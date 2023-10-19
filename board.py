@@ -53,7 +53,7 @@ class Board:
         :return: None
         """
         s.game_screen.delete("all")
-        
+        s.game_screen.create_text(250, 25, text=f"SCORE:{s.points}", fill="red", font=40)
         for row in range(s.rows):
             for col in range(s.columns): 
                 # Board array squares
@@ -91,6 +91,7 @@ class Board:
                 s.game_screen.create_rectangle(700 + 50 * col, 700 + 50 * row, 742 + 50 * col, 742 + 50 * row, fill=color, outline=color)
     
     # TODO when not empty it takes time to show respawn
+    # TODO prevent reholding of same piece
     def hold_piece(s):
         for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = None
@@ -209,7 +210,6 @@ class Board:
         s.display_board()  
         
     def gravity(s):
-        print(s.game_over)
         if s.game_over == 1:
             return
         if s.valid_shift("down") == False:
