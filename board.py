@@ -35,18 +35,9 @@ class Board:
         s.game_over = 0
         root.after(0, s.gravity())
 
-        
     def reset(s):
         s.points = 0
-        s.rows = 20
-        s.columns = 10
-        s.queue_rows = 11
-        s.queue_columns = 4
-        s.holder_rows = 2
-        s.holder_columns = 4
         s.holder = []
-        s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
-        s.piece_colors = {"I":"cyan", "J":"purple", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
         s.board_array = [[None] * s.columns for i in range(s.rows)]
         s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
         s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
@@ -58,7 +49,7 @@ class Board:
 
     def display_board(s):
         """
-        Displays the board, scoreboard, whose move it is, etc.
+        Displays the board, scoreboard, etc.
         :return: None
         """
         s.game_screen.delete("all")
