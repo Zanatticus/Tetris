@@ -1,6 +1,5 @@
 class Piece:
-     def __init__(self, piece_type):
-          s = self
+     def __init__(s, piece_type):
           s.piece_type = piece_type
           #s.piece_list = ["I", "J", "L", "O", "S", "T", "Z"]
           #s.piece_colors = {"I":"cyan", "J":"pink", "L":"orange", "O":"yellow", "S":"red", "T":"magenta", "Z":"green"}
@@ -49,8 +48,7 @@ class Piece:
                s.pivot = 2 # 3rd coordinate [1, 4]
                s.position = None
 
-     def reset_coordinates(self):
-          s = self
+     def reset_piece(s):
           if s.piece_type == "I":
                s.coordinates = [[1,3], [1,4], [1,5], [1,6]]
                s.position = 0
@@ -67,23 +65,21 @@ class Piece:
           if s.piece_type == "Z":
                s.coordinates = [[0,3], [0,4], [1,4], [1,5]]
 
-     def shift_piece(self, direction):
-          s = self
+     def shift_piece(s, direction):
           if direction == "left":
                direction = -1
           elif direction == "right":
                direction = 1
-          for [row, col] in s.coordinates:
-               col = col + direction
+          for square in s.coordinates:
+               square[1] = square[1] + direction
 
-     def drop_piece(self):
-          s = self
-          for [row, col] in s.coordinates:
-               row = row + 1
+     def drop_piece(s):
+          for square in s.coordinates:
+               square[0] = square[0] + 1
                
-     def rotate_piece(piece, direction, pivot, position = None):
+     def create_rotated_piece(s, direction):
           rotated_piece = []
-          pivot_row, pivot_col = piece[pivot]
+          pivot_row, pivot_col = s.coordinates[s.pivot]
           row_modifier = 0
           column_modifier = 0
           piece_type = "I"
@@ -91,29 +87,38 @@ class Piece:
           if direction == "clockwise":
                direction = 1
                if piece_type == "I":
-                    if position == 0:
+                    if s.position == 0:
                          row_modifier = 1 
-                    if position == 1:
+                    if s.position == 1:
                          column_modifier = -1
-                    if position == 2:
+                    if s.position == 2:
                          row_modifier = -1 
-                    if position == 3:
+                    if s.position == 3:
                          column_modifier = 1
           elif direction == "counter-clockwise":
                direction = -1
                if piece_type == "I":
-                    if position == 0:
+                    if s.position == 0:
                          column_modifier = -1
-                    if position == 1:
+                    if s.position == 1:
                          row_modifier = 1
-                    if position == 2:
+                    if s.position == 2:
                          column_modifier = 1 
-                    if position == 3:
+                    if s.position == 3:
                          row_modifier = -1
           
-          for [row, col] in piece:
+          for [row, col] in s.coordinates:
                # Calculate the new coordinates after rotation around the pivot point
                new_row = pivot_row + (col - pivot_col) * direction
                new_col = pivot_col - (row - pivot_row) * direction   
                rotated_piece.append([new_row + row_modifier, new_col + column_modifier])
           return rotated_piece
+     
+     def rotate_piece(s, rotated_piece):
+          s = rotated_piece
+          
+          
+# new_piece = Piece("I")
+# print(new_piece.coordinates)
+# new_piece.drop_piece()
+# print(new_piece.coordinates)
