@@ -1,7 +1,5 @@
 from piece import Piece
 import random
-import time
-from icecream import ic
 
 class Board:
     """
