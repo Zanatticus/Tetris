@@ -34,7 +34,7 @@ class Board:
         s.spawn_piece()
         s.game_over = 0
         s.gravity_timer = 1000
-        root.after(0, s.gravity())
+        s.root.after(0, s.gravity())
 
     def reset(s):
         s.points = 0
@@ -47,7 +47,8 @@ class Board:
         s.update_queue_array()
         s.spawn_piece()
         s.game_over = 0
-
+        s.root.after(0, s.gravity())
+        
     def display_board(s):
         """
         Displays the board, scoreboard, etc.
@@ -90,7 +91,6 @@ class Board:
                     color = s.piece_colors[s.holder_array[row][col]]
                 s.game_screen.create_rectangle(700 + 50 * col, 700 + 50 * row, 742 + 50 * col, 742 + 50 * row, fill=color, outline=color)
     
-    # TODO when not empty it takes time to show respawn   
     def hold_piece(s):
         if s.holder == []:
             for [row, col] in s.current_piece.coordinates:
