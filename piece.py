@@ -115,9 +115,3 @@ class Piece:
      
      def rotate_piece(s, rotated_piece):
           s = rotated_piece
-          
-          
-# new_piece = Piece("I")
-# print(new_piece.coordinates)
-# new_piece.drop_piece()
-# print(new_piece.coordinates)
