@@ -1,103 +1,138 @@
+import math
+columns = 6
+rows = 8
+a = [[0] * columns for i in range(rows)]
+b = [[0] * columns for i in range(rows)]
+c = [[0] * columns for i in range(rows)]
+d = [[0] * columns for i in range(rows)]
+e = [[0] * columns for i in range(rows)]
 
-a = [
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,1,0,0],
-    [0,0,0,1,1,1,0],
-    [0,0,0,0,0,0,0],
-    [1,1,1,1,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-]
-b = [
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,1,0,0],
-    [0,0,0,1,1,1,0],
-    [0,0,0,0,0,0,0],
-    [1,1,1,1,0,0,0],
-    [0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0],
-]
+I_Piece = [[4, 2], [4, 3], [4, 4], [4, 5]] # None pivot
+J_Piece = [[3, 4], [4, 2], [4, 3], [4, 4]] # 2 pivot
+L_Piece = [[3, 2], [4, 2], [4, 3], [4, 4]] # 3 pivot
+S_Piece = [[3, 3], [3, 4], [4, 3], [4, 4]] # 4 pivot
+T_Piece = [[3, 2], [4, 1], [4, 2], [4, 3]] # 3 pivot
+Z_Piece = [[3, 2], [3, 3], [4, 3], [4, 4]] # 3 pivot
 
-def rotate_right(piece, pivot, position):
-    rotated_piece = []
-    pivot_row, pivot_col = pivot
-    if position == 0:
-        row_modifier = -1
-        column_modifier = 2
-        for [row, col] in piece:
-            [new_row, new_col] = [row + row_modifier, col + column_modifier]
-            row_modifier + 1
-            column_modifier - 1
-    if position == 1:
-        row_modifier = 2
-        column_modifier = 1
-        for [row, col] in piece:
-            [new_row, new_col] = [row + row_modifier, col + column_modifier]
-            row_modifier + 1
-            column_modifier - 1
-    if position == 2:
-        row_modifier = -2
-        column_modifier = 1
-        for [row, col] in piece:
-            [new_row, new_col] = [row + row_modifier, col + column_modifier]
-            row_modifier + 1
-            column_modifier - 1
-    if position == 3:
-        row_modifier = -1
-        column_modifier = 2
-        for [row, col] in piece:
-            [new_row, new_col] = [row + row_modifier, col + column_modifier]
-            row_modifier + 1
-            column_modifier - 1
+
+def rotate_piece(piece_coords, direction):
+    # Calculate the center of the piece
+    x_center = sum(x for x, y in piece_coords) / len(piece_coords)
+    y_center = sum(y for x, y in piece_coords) / len(piece_coords)
+
+    # Determine direction of rotation
+    if direction == "clockwise":
+        direction = 1
+    if direction == "counter-clockwise":
+        direction = -1
         
-    
-    for [row, col] in piece:
-        [new_row, new_col] = [row + row_modifier, col + column_modifier]
-        row_modifier + 1
-        column_modifier - 1
-    
-    
-    
-    
-    for [row, col] in piece:
-        # Calculate the new coordinates after rotation around the pivot point
-        new_row = pivot_row + (col - pivot_col)
-        new_col = pivot_col - (row - pivot_row)
-        rotated_piece.append([new_row, new_col])
-    return rotated_piece
-
-def rotate_left(piece, pivot):
+    # Rotate each block of the piece
     rotated_piece = []
-    pivot_row, pivot_col = pivot
+    for x, y in piece_coords:
+        # Translate block to origin
+        x -= x_center
+        y -= y_center
+        
+        # Rotate block
+        x_new = y * (direction)
+        y_new = -x * (direction)
 
-    for [row, col] in piece:
-        # Calculate the new coordinates after rotation around the pivot point
-        new_row = pivot_row - (col - pivot_col)
-        new_col = pivot_col + (row - pivot_row)
-        rotated_piece.append([new_row, new_col])
+        # Translate block back to center
+        x_new += x_center
+        y_new += y_center
+        
+        # Append block to rotated piece
+        rotated_piece.append((round(x_new), round(y_new)))
     return rotated_piece
 
-# Specify the pivot point for rotation
-pivot_point1 = [4, 4]
-pivot_point2 = [5, 2]
-T_Piece = [[3, 4], [4, 3], [4, 4], [4, 5]]
-I_Piece = [[6, 0], [6, 1], [6, 2], [6, 3]]
-# Rotate the Tetris piece around the pivot point
-rotated_T = rotate_right(rotate_right(T_Piece, pivot_point1), pivot_point1)
-#rotated_I = rotate_right(I_Piece, pivot_point2)
-rotated_T2 = rotate_left(T_Piece, pivot_point1)
-
+def rotate_long_piece(piece_coords, direction, position):
+    # Calculate the center of the piece
+    x_center = math.ceil(sum(x for x, y in piece_coords) / len(piece_coords))
+    y_center = math.ceil(sum(y for x, y in piece_coords) / len(piece_coords))
     
-for square in rotated_T2:
-    b[square[0]][square[1]] = 2
+    # Determine direction of rotation
+    if direction == "clockwise":
+        direction = 1
+    else:
+        direction = -1
+        
+    # Rotate each block of the piece
+    rotated_piece = []
+    for x, y in piece_coords:
+        # Translate block to origin
+        x -= x_center
+        y -= y_center
 
+        # Rotate block
+        x_new = y * (direction)
+        y_new = -x * (direction)
+        
+        # Translate block back to center
+        x_new += x_center
+        y_new += y_center
+        
+        # Append block to rotated piece
+        if direction == "clockwise":
+            if position == 0: # Flat top
+                rotated_piece.append((x_new + 1, y_new))
+            if position == 1: # Right upright
+                rotated_piece.append((x_new, y_new - 1))
+            if position == 2 : # Flat bottom
+                rotated_piece.append((x_new, y_new - 1))
+            if position == 3: # Left upright
+                rotated_piece.append((x_new - 1, y_new))
+        else:
+            if position == 0: # Flat top
+                rotated_piece.append((x_new, y_new - 1))
+            if position == 1: # Right upright
+                rotated_piece.append((x_new, y_new + 1))
+            if position == 2 : # Flat bottom
+                rotated_piece.append((x_new - 1, y_new))
+            if position == 3: # Left upright
+                rotated_piece.append((x_new - 1, y_new))
+            
+        # if position == 0: # Flat top
+        #     rotated_piece.append((math.floor(x_new) + 1, math.ceil(y_new)))
+        # if position == 1: # Right upright
+        #     rotated_piece.append((math.ceil(x_new), math.floor(y_new)))
+        # if position == 2 : # Flat bottom
+        #     rotated_piece.append((math.floor(x_new), math.floor(y_new)))
+        # if position == 3: # Left upright
+        #     rotated_piece.append((math.floor(x_new), math.ceil(y_new)))
+    return rotated_piece
+
+
+direction1 = "clockwise"
+direction2 = "counter-clockwise"
+current_piece = L_Piece
+
+for [row, col] in current_piece:
+    a[row][col] = 1
+rotated_piece = rotate_piece(current_piece, direction1)
+for [row, col] in rotated_piece:
+    b[row][col] = 2
+rotated_piece = rotate_piece(rotated_piece, direction1)
+for [row, col] in rotated_piece:
+    c[row][col] = 3
+rotated_piece = rotate_piece(rotated_piece, direction1)
+for [row, col] in rotated_piece:
+    d[row][col] = 4
+rotated_piece = rotate_piece(rotated_piece, direction1)
+for [row, col] in rotated_piece:
+    e[row][col] = 5
 
 for row in a:
     print(row)    
 print()
 for row in b:
     print(row)
+print()
+for row in c:
+    print(row)    
+print()
+for row in d:
+    print(row)
+print()
+for row in e:
+    print(row)
+print()   

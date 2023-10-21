@@ -14,7 +14,7 @@ S_Piece = [[3, 3], [3, 4], [4, 2], [4, 3]] # 3 pivot
 T_Piece = [[3, 2], [4, 1], [4, 2], [4, 3]] # 2 pivot
 Z_Piece = [[3, 2], [3, 3], [4, 3], [4, 4]] # 2 pivot
 
-def rotate_piece(piece, direction, pivot, position = 0 ):
+def rotate_piece(piece, direction, pivot, position = 0):
     rotated_piece = []
     pivot_row, pivot_col = piece[pivot]
     row_modifier = 0
