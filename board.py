@@ -70,7 +70,6 @@ class Board:
         # Board array boundaries
         s.game_screen.create_line(50, 50 * 9, 50 * 9, 50 * 9)
         s.game_screen.create_line(50 * 9, 50, 50 * 9, 50 * 9)      
-        
         # Piece queue
         #s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black", outline="grey")
         for row in range(s.queue_rows):
@@ -93,25 +92,23 @@ class Board:
     
     # TODO when not empty it takes time to show respawn   
     def hold_piece(s):
-        if s.holder != []:
-            if s.holder[0].held > 0:
-                return
-            held_piece = s.holder.pop(0)
-            for [row, col] in s.current_piece.coordinates:
-                s.board_array[row][col] = None
-            s.current_piece.reset_piece()
-            s.holder.append(s.current_piece)
-            s.current_piece = held_piece
-            s.spawn_piece
         if s.holder == []:
             for [row, col] in s.current_piece.coordinates:
                 s.board_array[row][col] = None
             s.current_piece.reset_piece()
-            s.holder.append(s.current_piece)    
+            s.holder.append(s.current_piece)
+            s.update_holder_array()
             s.get_next_piece()
-        s.holder[0].held += 1
-        s.update_holder_array()
-        s.display_board()           
+        else:
+            if s.holder[0].held == 1:
+                return
+            for [row, col] in s.current_piece.coordinates:
+                s.board_array[row][col] = None
+            s.current_piece.reset_piece()
+            s.holder.append(s.current_piece)
+            s.current_piece = s.holder.pop(0)
+            s.update_holder_array()
+            s.spawn_piece()
 
     def update_holder_array(s):
         s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
@@ -144,10 +141,7 @@ class Board:
             if s.board_array[row][col] != None:
                 s.end_game()
                 return
-        for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = s.current_piece.piece_type
-        if s.holder != []:
-            s.holder[0].held -= 1
         s.display_board()
         
     def end_game(s):
@@ -263,6 +257,8 @@ class Board:
             s.points += clear_points[number_of_clears]
             s.gravity_timer -= int(clear_points[number_of_clears] / 50)
         del s.current_piece
+        if s.holder != []:
+            s.holder[0].held = 0
         s.get_next_piece()
         
     def clear_line(s):
