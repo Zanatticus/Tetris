@@ -1,6 +1,5 @@
 from board import *
 from tkinter import *
-import time
 
 root = Tk()
 # Creates the window size and color which the game will be played on
@@ -17,5 +16,4 @@ game_screen.bind("<Key>", myBoard.keyboard_buttons)
 game_screen.focus_set()
 
 root.title("Tetris")
-#root.after(0, myBoard.gravity())
 root.mainloop()

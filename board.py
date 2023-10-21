@@ -33,6 +33,7 @@ class Board:
         s.update_queue_array()
         s.spawn_piece()
         s.game_over = 0
+        s.gravity_timer = 1000
         root.after(0, s.gravity())
 
     def reset(s):
@@ -144,7 +145,7 @@ class Board:
         
     def end_game(s):
         s.game_screen.delete("all")
-        s.game_screen.create_text(250, 470, text="GAME OVER! Press 'R' to restart or 'Q' to quit.",
+        s.game_screen.create_text(250, 470, text="GAME OVER! Press 'R' to restart or 'ESC' to quit.",
                                          fill="black",
                                          font=40)
         s.game_over = 1
@@ -215,7 +216,7 @@ class Board:
         if s.valid_shift("down") == False:
             s.place()
             s.display_board()
-            s.root.after(1000, s.gravity)
+            s.root.after(s.gravity_timer, s.gravity)
             return
         for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = None
@@ -223,7 +224,7 @@ class Board:
         for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = s.current_piece.piece_type
         s.display_board()
-        s.root.after(1000, s.gravity) 
+        s.root.after(s.gravity_timer, s.gravity) 
     
     def valid_shift(s, type_of_movement):
         for [row, col] in s.current_piece.coordinates:
@@ -253,19 +254,19 @@ class Board:
         number_of_clears = s.clear_line()
         if number_of_clears:
             s.points += clear_points[number_of_clears]
-            print(s.points)
+            s.gravity_timer -= int(clear_points[number_of_clears] / 50)
         del s.current_piece
         s.get_next_piece()
         
     def clear_line(s):
         clear_counter = 0
         for row in s.board_array:
-            sqsuare_counter = 0
-            for sqsuare in row:
-                if sqsuare == None:
+            square_counter = 0
+            for square in row:
+                if square == None:
                     break
-                sqsuare_counter += 1
-            if sqsuare_counter == 10:
+                square_counter += 1
+            if square_counter == 10:
                 s.board_array.remove(row)
                 s.board_array.insert(0, [None] * 10)
                 clear_counter += 1        
