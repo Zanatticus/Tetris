@@ -91,31 +91,8 @@ class Board:
                     color = s.piece_colors[s.holder_array[row][col]]
                 s.game_screen.create_rectangle(700 + 50 * col, 700 + 50 * row, 742 + 50 * col, 742 + 50 * row, fill=color, outline=color)
     
-    # TODO when not empty it takes time to show respawn
-    # TODO prevent reholding of same piece
-    # def hold_piece(s):
-    #     if s.holder != []:
-    #         if s.holder[0].held > 0:
-    #             return
-    #         held_piece = s.holder.pop(0)
-    #         s.current_piece.reset_piece()
-    #         s.current_piece.held = 1
-    #         for [row, col] in s.current_piece.coordinates:
-    #             s.board_array[row][col] = None
-    #         s.holder.append(s.current_piece)
-    #         s.current_piece = held_piece
-    #         s.spawn_piece
-    #     if s.holder == []:
-    #         for [row, col] in s.current_piece.coordinates:
-    #             s.board_array[row][col] = None
-    #         s.holder.append(s.current_piece)    
-    #         s.get_next_piece()  
-        
-    #     s.update_holder_array()
-    #     s.display_board()
-               
+    # TODO when not empty it takes time to show respawn   
     def hold_piece(s):
-
         if s.holder != []:
             if s.holder[0].held > 0:
                 return
@@ -158,7 +135,7 @@ class Board:
         s.update_queue_array()
         
     def get_random_piece(s):
-        random_int = random.randint(0, 6)
+        random_int = random.randint(0, 1000) % 7
         random_piece = s.piece_list[random_int]
         return Piece(random_piece)
 
