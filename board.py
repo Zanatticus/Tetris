@@ -93,21 +93,49 @@ class Board:
     
     # TODO when not empty it takes time to show respawn
     # TODO prevent reholding of same piece
+    # def hold_piece(s):
+    #     if s.holder != []:
+    #         if s.holder[0].held > 0:
+    #             return
+    #         held_piece = s.holder.pop(0)
+    #         s.current_piece.reset_piece()
+    #         s.current_piece.held = 1
+    #         for [row, col] in s.current_piece.coordinates:
+    #             s.board_array[row][col] = None
+    #         s.holder.append(s.current_piece)
+    #         s.current_piece = held_piece
+    #         s.spawn_piece
+    #     if s.holder == []:
+    #         for [row, col] in s.current_piece.coordinates:
+    #             s.board_array[row][col] = None
+    #         s.holder.append(s.current_piece)    
+    #         s.get_next_piece()  
+        
+    #     s.update_holder_array()
+    #     s.display_board()
+               
     def hold_piece(s):
-        for [row, col] in s.current_piece.coordinates:
-            s.board_array[row][col] = None
-            s.current_piece.reset_piece()
+
         if s.holder != []:
+            if s.holder[0].held > 0:
+                return
             held_piece = s.holder.pop(0)
             s.holder.append(s.current_piece)
+            for [row, col] in s.current_piece.coordinates:
+                s.board_array[row][col] = None
+                s.current_piece.reset_piece()
             s.current_piece = held_piece
             s.spawn_piece
         if s.holder == []:
+            for [row, col] in s.current_piece.coordinates:
+                s.board_array[row][col] = None
+                s.current_piece.reset_piece()
             s.holder.append(s.current_piece)    
-            s.get_next_piece()  
+            s.get_next_piece()
+        s.holder[0].held += 1
         s.update_holder_array()
-        s.display_board()
-               
+        s.display_board()           
+
     def update_holder_array(s):
         s.holder_array = [[None] * s.holder_columns for i in range(s.holder_rows)]
         for [row, col] in s.holder[0].queue_coordinates:
@@ -141,6 +169,8 @@ class Board:
                 return
         for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = s.current_piece.piece_type
+        if s.holder != []:
+            s.holder[0].held -= 1
         s.display_board()
         
     def end_game(s):
