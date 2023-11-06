@@ -20,7 +20,7 @@ class Piece:
                s.queue_coordinates = [[0,2], [1,0], [1,1], [1,2]]
                s.pivot = 2 # 3rd coordinate [1, 4]
           if piece_type == "O":
-               s.color = "yellow"
+               s.color = "FFD700"
                s.coordinates = [[0,4], [0,5], [1,4], [1,5]]
                s.queue_coordinates = [[0,1], [0,2], [1,1], [1,2]]
                s.pivot = None

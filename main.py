@@ -1,10 +1,18 @@
 from board import *
 from tkinter import *
+from PIL import ImageTk
 
 root = Tk()
+
 # Creates the window size and color which the game will be played on
-game_screen = Canvas(root, width=1000, height=1500, background="grey", highlightthickness=0)
-game_screen.pack()
+
+image = ImageTk.PhotoImage(file = "C:\Users\zinga\Tetris\Tetris.png")
+#photo_image = PhotoImage(file="background_tetris.png")
+game_screen = Canvas(root, width=1000, height=1500, bg = "gray", highlightthickness=0)
+
+game_screen.create_image(0, 0, anchor="nw", image=image)
+
+game_screen.pack(expand=YES, fill= BOTH)
 
 # Create a Board object and display it to start the game
 myBoard = Board(game_screen, root)

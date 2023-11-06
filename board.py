@@ -1,5 +1,7 @@
 from piece import Piece
 import random
+import tkinter as tk
+from scoreboard import ScoreboardApp
 
 class Board:
     """
@@ -12,7 +14,6 @@ class Board:
         """
         s.game_screen = game_screen
         s.root = root
-        
         s.points = 0
         s.rows = 20
         s.columns = 10
@@ -53,22 +54,27 @@ class Board:
         :return: None
         """
         s.game_screen.delete("all")
-        s.game_screen.create_text(250, 25, text=f"SCORE:{s.points}", fill="red", font=40)
+        unit = 50
+        
+        s.game_screen.create_text(unit * 14, unit * 17.5, text=f"SCORE:", fill="black", font=40)
+        s.game_screen.create_text(unit * 14, unit * 18, text=f"{s.points}", fill="black", font=40, anchor="center")
+        
         for row in range(s.rows):
             for col in range(s.columns): 
                 # Board array squares
                 if s.board_array[row][col] == None:
                     color = "black"
                 else:
-                    color = s.piece_colors[s.board_array[row][col]]
-                    
-                s.game_screen.create_rectangle(54 + 50 * col, 54 + 50 * row, 96 + 50 * col, 96 + 50 * row, fill=color, outline=color)
-                # Board array lines
-                s.game_screen.create_line(50 * (col + 1), 50 * (row + 1), 50 * 9, 50 * (row + 1))
-                s.game_screen.create_line(50 * (col + 1), 50 * (row + 1), 50 * (col + 1), 50 * 9)
-        # Board array boundaries
-        s.game_screen.create_line(50, 50 * 9, 50 * 9, 50 * 9)
-        s.game_screen.create_line(50 * 9, 50, 50 * 9, 50 * 9)      
+                    color = s.piece_colors[s.board_array[row][col]] 
+                s.game_screen.create_rectangle(1 + unit * (col + 1), 1 + unit * (row + 1), -1 + unit * (col + 2), -1 + unit * (row + 2), fill=color, outline=color)
+     
+        # Create horizontal border lines
+        for r in range(21):
+            s.game_screen.create_line(unit, unit * (r + 1), unit * 11, unit * (r + 1), fill="white", width = 2)
+        # Create vertical border lines
+        for c in range(11):    
+            s.game_screen.create_line(unit * (c + 1), unit, unit * (c + 1), unit * 21, fill="white", width = 2)    
+        
         # Piece queue
         #s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black", outline="grey")
         for row in range(s.queue_rows):
@@ -77,8 +83,19 @@ class Board:
                     color = "black"
                 else:
                     color = s.piece_colors[s.queue_array[row][col]]
-                s.game_screen.create_rectangle(700 + 50 * col, 100 + 50 * row, 742 + 50 * col, 142 + 50 * row, fill=color, outline=color)
-
+                s.game_screen.create_rectangle(1 + unit * (col + 12), 1 + unit * (row + 2), -1 + unit * (col + 13), -1 + unit * (row + 3), fill=color, outline=color)
+                #s.game_screen.create_line(700 + unit * col, 100 + unit * row, 750 + unit * col, 100 + unit * row, fill="white", width = 2)
+        
+        # Create 'NEXT' Text:
+        s.game_screen.create_text(unit * 14, unit * 1.5, text="NEXT", fill="black", font=40)
+        
+        # Create horizontal border lines for piece queue
+        for r in range(12):
+            s.game_screen.create_line(unit * 12, unit * (r + 2), unit * 16, unit * (r + 2), fill="white", width = 2)
+        # Create vertical border lines for piece queue
+        for c in range(5):    
+            s.game_screen.create_line(unit * (c + 12), unit * 2, unit * (c + 12), unit * 13, fill="white", width = 2)    
+        
         # Holder
         #s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black", outline="grey")
         for row in range(s.holder_rows):
@@ -87,7 +104,17 @@ class Board:
                     color = "black"
                 else:
                     color = s.piece_colors[s.holder_array[row][col]]
-                s.game_screen.create_rectangle(700 + 50 * col, 700 + 50 * row, 742 + 50 * col, 742 + 50 * row, fill=color, outline=color)
+                s.game_screen.create_rectangle(1 + unit * (col + 12), 1 + unit * (row + 14), -1 + unit * (col + 13), -1 + unit * (row + 15), fill=color, outline=color)
+
+        # Create 'HOLD' Text:
+        s.game_screen.create_text(unit * 14, unit * 13.5, text="HOLD", fill="black", font=40)
+
+        # Create horizontal border lines for holder
+        for r in range(3):
+            s.game_screen.create_line(unit * 12, unit * (r + 14), unit * 16, unit * (r + 14), fill="white", width = 2)
+        # Create vertical border lines for holder
+        for c in range(5):    
+            s.game_screen.create_line(unit* (c + 12), unit * 14, unit * (c + 12), unit * 16, fill="white", width = 2)
     
     def hold_piece(s):
         if s.holder == []:
@@ -138,7 +165,9 @@ class Board:
         for [row, col] in s.current_piece.coordinates:
             if s.board_array[row][col] != None:
                 s.end_game()
+                print('test')
                 return
+        for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = s.current_piece.piece_type
         s.display_board()
         
@@ -148,6 +177,12 @@ class Board:
                                          fill="black",
                                          font=40)
         s.game_over = 1
+        
+        root = tk.Tk()
+        root.focus_set()
+        app = ScoreboardApp(root)
+        root.mainloop()
+        
     
     def rotate_piece(s, direction):
         if s.current_piece.piece_type == "O":
@@ -294,27 +329,29 @@ class Board:
             s.play_new_game()
         elif button_pressed.lower() == "escape":
             s.root.destroy()
-        elif button_pressed.lower() == "q":
-            s.rotate_piece("counter-clockwise")
-        elif button_pressed.lower() == "e":
-            s.rotate_piece("clockwise")
-        elif button_pressed.lower() == "a":
-            s.shift("left")
-        elif button_pressed.lower() == "d":
-            s.shift("right")
-        elif button_pressed.lower() == "h":
-            s.hold_piece()
-        elif button_pressed.lower() == "w":
-            s.hard_drop()   
-        elif button_pressed.lower() == "s":
-            s.soft_drop()            
+        if s.game_over == 0:    
+            if button_pressed.lower() == "q":
+                s.rotate_piece("counter-clockwise")
+            elif button_pressed.lower() == "e":
+                s.rotate_piece("clockwise")
+            elif button_pressed.lower() == "a":
+                s.shift("left")
+            elif button_pressed.lower() == "d":
+                s.shift("right")
+            elif button_pressed.lower() == "h":
+                s.hold_piece()
+            elif button_pressed.lower() == "w":
+                s.hard_drop()   
+            elif button_pressed.lower() == "s":
+                s.soft_drop()            
     
     def play_new_game(s):
         """
         Restarts the game.
         :return: None
         """
-        s.game_screen.delete("all")
-        s.reset()
-        s.display_board()
+        if s.game_over == 1:
+            s.game_screen.delete("all")
+            s.reset()
+            s.display_board()
         
