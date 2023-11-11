@@ -2,6 +2,7 @@ from piece import Piece
 import random
 import tkinter as tk
 from scoreboard import ScoreboardApp
+import darkdetect
 
 class Board:
     """
@@ -14,6 +15,13 @@ class Board:
         """
         s.game_screen = game_screen
         s.root = root
+        system_color_mode = darkdetect.theme()
+        if system_color_mode == 'Dark':
+            s.fill_color = 'black'
+            s.outline_color = 'white'
+        else:
+            s.fill_color = 'white'
+            s.outline_color = 'black'
         s.points = 0
         s.rows = 20
         s.columns = 10
@@ -55,66 +63,67 @@ class Board:
         """
         s.game_screen.delete("all")
         unit = 50
-        
-        s.game_screen.create_text(unit * 14, unit * 17.5, text=f"SCORE:", fill="black", font=40)
-        s.game_screen.create_text(unit * 14, unit * 18, text=f"{s.points}", fill="black", font=40, anchor="center")
+
+
+        s.game_screen.create_text(unit * 14, unit * 17.5, text=f"SCORE:", fill=s.outline_color, font=40)
+        s.game_screen.create_text(unit * 14, unit * 18, text=f"{s.points}", fill=s.outline_color, font=40, anchor="center")
         
         for row in range(s.rows):
             for col in range(s.columns): 
                 # Board array squares
                 if s.board_array[row][col] == None:
-                    color = "black"
+                    color = s.fill_color
                 else:
                     color = s.piece_colors[s.board_array[row][col]] 
                 s.game_screen.create_rectangle(1 + unit * (col + 1), 1 + unit * (row + 1), -1 + unit * (col + 2), -1 + unit * (row + 2), fill=color, outline=color)
      
         # Create horizontal border lines
         for r in range(21):
-            s.game_screen.create_line(unit, unit * (r + 1), unit * 11, unit * (r + 1), fill="white", width = 2)
+            s.game_screen.create_line(unit, unit * (r + 1), unit * 11, unit * (r + 1), fill=s.outline_color, width = 2)
         # Create vertical border lines
         for c in range(11):    
-            s.game_screen.create_line(unit * (c + 1), unit, unit * (c + 1), unit * 21, fill="white", width = 2)    
+            s.game_screen.create_line(unit * (c + 1), unit, unit * (c + 1), unit * 21, fill=s.outline_color, width = 2)    
         
         # Piece queue
-        #s.game_screen.create_rectangle(700, 100, 1000, 500, fill="black", outline="grey")
+        #s.game_screen.create_rectangle(700, 100, 1000, 500, fill=s.fill_color, outline="grey")
         for row in range(s.queue_rows):
             for col in range(s.queue_columns): 
                 if s.queue_array[row][col] == None:
-                    color = "black"
+                    color = s.fill_color
                 else:
                     color = s.piece_colors[s.queue_array[row][col]]
                 s.game_screen.create_rectangle(1 + unit * (col + 12), 1 + unit * (row + 2), -1 + unit * (col + 13), -1 + unit * (row + 3), fill=color, outline=color)
-                #s.game_screen.create_line(700 + unit * col, 100 + unit * row, 750 + unit * col, 100 + unit * row, fill="white", width = 2)
+                #s.game_screen.create_line(700 + unit * col, 100 + unit * row, 750 + unit * col, 100 + unit * row, fill=s.outline_color, width = 2)
         
         # Create 'NEXT' Text:
-        s.game_screen.create_text(unit * 14, unit * 1.5, text="NEXT", fill="black", font=40)
+        s.game_screen.create_text(unit * 14, unit * 1.5, text="NEXT", fill=s.outline_color, font=40)
         
         # Create horizontal border lines for piece queue
         for r in range(12):
-            s.game_screen.create_line(unit * 12, unit * (r + 2), unit * 16, unit * (r + 2), fill="white", width = 2)
+            s.game_screen.create_line(unit * 12, unit * (r + 2), unit * 16, unit * (r + 2), fill=s.outline_color, width = 2)
         # Create vertical border lines for piece queue
         for c in range(5):    
-            s.game_screen.create_line(unit * (c + 12), unit * 2, unit * (c + 12), unit * 13, fill="white", width = 2)    
+            s.game_screen.create_line(unit * (c + 12), unit * 2, unit * (c + 12), unit * 13, fill=s.outline_color, width = 2)    
         
         # Holder
-        #s.game_screen.create_rectangle(700, 600, 1000, 850, fill="black", outline="grey")
+        #s.game_screen.create_rectangle(700, 600, 1000, 850, fill=s.fill_color, outline="grey")
         for row in range(s.holder_rows):
             for col in range(s.holder_columns): 
                 if s.holder_array[row][col] == None:
-                    color = "black"
+                    color = s.fill_color
                 else:
                     color = s.piece_colors[s.holder_array[row][col]]
                 s.game_screen.create_rectangle(1 + unit * (col + 12), 1 + unit * (row + 14), -1 + unit * (col + 13), -1 + unit * (row + 15), fill=color, outline=color)
 
         # Create 'HOLD' Text:
-        s.game_screen.create_text(unit * 14, unit * 13.5, text="HOLD", fill="black", font=40)
+        s.game_screen.create_text(unit * 14, unit * 13.5, text="HOLD", fill=s.outline_color, font=40)
 
         # Create horizontal border lines for holder
         for r in range(3):
-            s.game_screen.create_line(unit * 12, unit * (r + 14), unit * 16, unit * (r + 14), fill="white", width = 2)
+            s.game_screen.create_line(unit * 12, unit * (r + 14), unit * 16, unit * (r + 14), fill=s.outline_color, width = 2)
         # Create vertical border lines for holder
         for c in range(5):    
-            s.game_screen.create_line(unit* (c + 12), unit * 14, unit * (c + 12), unit * 16, fill="white", width = 2)
+            s.game_screen.create_line(unit* (c + 12), unit * 14, unit * (c + 12), unit * 16, fill=s.outline_color, width = 2)
     
     def hold_piece(s):
         if s.holder == []:
@@ -174,7 +183,7 @@ class Board:
     def end_game(s):
         s.game_screen.delete("all")
         s.game_screen.create_text(250, 470, text="GAME OVER! Press 'R' to restart or 'ESC' to quit.",
-                                         fill="black",
+                                         fill=s.s.outline_color,
                                          font=40)
         s.game_over = 1
         
