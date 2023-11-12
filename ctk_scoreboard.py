@@ -6,8 +6,7 @@ class ScoreboardApp:
     def __init__(self, root, score):
         self.root = root
         self.score = score
-        root.title("Arcade Scoreboard")
-        
+        self.existing = 0
         self.score_dict = {}
         self.csv_filepath = "scoreboard.csv"
         with open(self.csv_filepath, 'r') as csvfile:
@@ -25,19 +24,27 @@ class ScoreboardApp:
         self.create_widgets()
     
     def create_widgets(self):
+        # Game Over text
+        self.scoreboard_label1 = customtkinter.CTkLabel(self.root, text="GAME OVER!", font=("Helvetica", 45))
+        self.scoreboard_label1.pack(pady=10)
+        # Restart/Quit text
+        self.scoreboard_label2 = customtkinter.CTkLabel(self.root, text="Press 'R' to restart or 'ESC' to quit!", font=("Helvetica", 30))
+        self.scoreboard_label2.pack(pady=10)
         # Label for displaying the scoreboard
-        self.scoreboard_label = customtkinter.CTkLabel(self.root, text="Scoreboard", font=("Helvetica", 30))
-        self.scoreboard_label.pack(pady=10)
+        self.scoreboard_label3 = customtkinter.CTkLabel(self.root, text="Scoreboard", font=("Helvetica", 30))
+        self.scoreboard_label3.pack(pady=10)
         
         # Listbox to display scores
-        #self.score_listbox = tk.Listbox(self.root, width=75, height=25)
         self.score_frame = customtkinter.CTkScrollableFrame(self.root, width=200, height=50)
         self.score_frame.pack()
         
         for name in self.score_dict:
-            txt = f"{name}: {self.score_dict.get(name)}"
+            txt = f"{name}: {int(self.score_dict.get(name))}"
             self.score_entry = customtkinter.CTkLabel(self.score_frame, text=txt)
             self.score_entry.pack()
+        
+        if self.score == 0:
+            return
         
         # Entry fields for name and score
         self.name_label = customtkinter.CTkLabel(self.root, text="Name:")
@@ -51,7 +58,7 @@ class ScoreboardApp:
         
 
     def add_score(self):
-        name = self.name_entry.get()
+        name = self.name_entry.get().upper()
         score = self.score
         
         if name and score:
@@ -65,6 +72,7 @@ class ScoreboardApp:
             
             self.score_dict[name] = score
             txt = f"{name}: {self.score_dict.get(name)}"
+            
             # Sort the score dict
             self.score_dict = dict(sorted(self.score_dict.items(), key=lambda item: item[1], reverse=True))
             
@@ -92,7 +100,7 @@ class ScoreboardApp:
             self.name_entry.destroy()
             self.name_label.destroy()
 
-if __name__ == "__main__":
-    root = customtkinter.CTk()
-    app = ScoreboardApp(root, 1200)
-    root.mainloop()
+# if __name__ == "__main__":
+#     root = customtkinter.CTk()
+#     app = ScoreboardApp(root, 1200)
+#     root.mainloop()

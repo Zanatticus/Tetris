@@ -1,9 +1,8 @@
 from piece import Piece
 import random
-import tkinter as tk
-from scoreboard import ScoreboardApp
+from tkinter import *
+from ctk_scoreboard import ScoreboardApp
 import darkdetect
-
 class Board:
     """
     Board class handles all the displaying of the board to the screen and everything else associated with the board.
@@ -22,6 +21,8 @@ class Board:
         else:
             s.fill_color = 'white'
             s.outline_color = 'black'
+        s.game_over = 0
+
         s.points = 0
         s.rows = 20
         s.columns = 10
@@ -39,7 +40,6 @@ class Board:
         s.current_piece = s.get_random_piece()
         s.update_queue_array()
         s.spawn_piece()
-        s.game_over = 0
         s.gravity_timer = 1000
         s.root.after(0, s.gravity())
 
@@ -62,9 +62,9 @@ class Board:
         :return: None
         """
         s.game_screen.delete("all")
+        if s.game_over == 1:
+            return
         unit = 50
-
-
         s.game_screen.create_text(unit * 14, unit * 17.5, text=f"SCORE:", fill=s.outline_color, font=40)
         s.game_screen.create_text(unit * 14, unit * 18, text=f"{s.points}", fill=s.outline_color, font=40, anchor="center")
         
@@ -85,7 +85,6 @@ class Board:
             s.game_screen.create_line(unit * (c + 1), unit, unit * (c + 1), unit * 21, fill=s.outline_color, width = 2)    
         
         # Piece queue
-        #s.game_screen.create_rectangle(700, 100, 1000, 500, fill=s.fill_color, outline="grey")
         for row in range(s.queue_rows):
             for col in range(s.queue_columns): 
                 if s.queue_array[row][col] == None:
@@ -93,7 +92,6 @@ class Board:
                 else:
                     color = s.piece_colors[s.queue_array[row][col]]
                 s.game_screen.create_rectangle(1 + unit * (col + 12), 1 + unit * (row + 2), -1 + unit * (col + 13), -1 + unit * (row + 3), fill=color, outline=color)
-                #s.game_screen.create_line(700 + unit * col, 100 + unit * row, 750 + unit * col, 100 + unit * row, fill=s.outline_color, width = 2)
         
         # Create 'NEXT' Text:
         s.game_screen.create_text(unit * 14, unit * 1.5, text="NEXT", fill=s.outline_color, font=40)
@@ -106,7 +104,6 @@ class Board:
             s.game_screen.create_line(unit * (c + 12), unit * 2, unit * (c + 12), unit * 13, fill=s.outline_color, width = 2)    
         
         # Holder
-        #s.game_screen.create_rectangle(700, 600, 1000, 850, fill=s.fill_color, outline="grey")
         for row in range(s.holder_rows):
             for col in range(s.holder_columns): 
                 if s.holder_array[row][col] == None:
@@ -174,24 +171,22 @@ class Board:
         for [row, col] in s.current_piece.coordinates:
             if s.board_array[row][col] != None:
                 s.end_game()
-                print('test')
                 return
         for [row, col] in s.current_piece.coordinates:
             s.board_array[row][col] = s.current_piece.piece_type
         s.display_board()
         
     def end_game(s):
-        s.game_screen.delete("all")
-        s.game_screen.create_text(250, 470, text="GAME OVER! Press 'R' to restart or 'ESC' to quit.",
-                                         fill=s.s.outline_color,
-                                         font=40)
         s.game_over = 1
+
+        s.game_screen.delete("all")
+        s.game_screen.pack_forget()
         
-        root = tk.Tk()
-        root.focus_set()
-        app = ScoreboardApp(root)
-        root.mainloop()
-        
+        s.scoreboard_screen = Frame(s.root, bg='grey')
+        s.scoreboard_screen.pack(expand=1, fill='both')
+        ScoreboardApp(s.scoreboard_screen, s.points)
+
+        #TODO PROFANITY FILTER
     
     def rotate_piece(s, direction):
         if s.current_piece.piece_type == "O":
@@ -363,4 +358,7 @@ class Board:
             s.game_screen.delete("all")
             s.reset()
             s.display_board()
+            s.scoreboard_screen.destroy()
+            s.scoreboard_screen.pack_forget()
+            s.game_screen.pack(expand=1, fill='both')
         
