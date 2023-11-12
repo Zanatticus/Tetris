@@ -1,12 +1,11 @@
 from piece import Piece
 import random
 from tkinter import *
-from ctk_scoreboard import ScoreboardApp
 import darkdetect
 import customtkinter
 import csv
-from profanity_filter import ProfanityFilter
 from better_profanity import profanity
+
 
 class Board:
     """
@@ -205,7 +204,6 @@ class Board:
         s.scoreboard_screen.focus_set()
         s.scoreboard_screen.bind("<Key>", s.scoreboard_keyboard_buttons)
         s.scoreboard_screen.bind("<Button-1>", s.click_event)
-
         if s.points != 0:
             s.create_score_submission()
     
