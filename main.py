@@ -1,6 +1,5 @@
 from board import *
 from tkinter import *
-#from tkinter import Canvas, PhotoImage, Tk
 
 root = Tk()
 
@@ -11,10 +10,12 @@ root.geometry("850x1500")
 game_screen = Canvas(root, bg = 'grey')
 game_screen.pack(expand=YES, fill=BOTH)
 
-root.wm_attributes('-transparentcolor', "grey")
+scoreboard_screen = Frame(root, bg='grey')
+
+#root.wm_attributes('-transparentcolor', "grey")
 
 # Create a Board object and display it to start the game
-myBoard = Board(game_screen, root)
+myBoard = Board(root, game_screen, scoreboard_screen)
 myBoard.display_board()
 
 # Allows for mouse clicks and keyboard inputs and focuses these inputs onto game_screen
