@@ -232,7 +232,8 @@ class Board:
     def click_event(s, event):
         x,y = s.scoreboard_screen.winfo_pointerxy()                   # get the mouse position on screen
         widget = s.scoreboard_screen.winfo_containing(x,y)            # identify the widget at this location
-        if (widget == ".text_widget") == False:                       # if the mouse is not over the text widget
+        print(widget)
+        if widget != ".text_widget":                       # if the mouse is not over the text widget
             s.scoreboard_screen.focus_set()                           # focus on root
             
     def create_score_submission(s):
