@@ -5,7 +5,7 @@ from ctk_scoreboard import ScoreboardApp
 import darkdetect
 import customtkinter
 import csv
-
+from profanity_filter import ProfanityFilter
 class Board:
     """
     Board class handles all the displaying of the board to the screen and everything else associated with the board.
@@ -206,10 +206,6 @@ class Board:
 
         if s.points != 0:
             s.create_score_submission()
-        #ScoreboardApp(s.root, s.scoreboard_screen, s.game_screen, s.points)
-        #s.game_screen.focus_set()
-        #TODO PROFANITY FILTER
-    
     
     def create_widgets(s):
         # Game Over text
@@ -254,6 +250,10 @@ class Board:
         
         if name and score:
             name = name[:10]
+
+            pf = ProfanityFilter()
+            name = pf.censor(name)
+
             existing_score = s.score_dict.get(name)
             
             if existing_score != None:    
@@ -290,17 +290,6 @@ class Board:
             s.add_score_button.destroy()
             s.name_entry.destroy()
             s.name_label.destroy()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     def rotate_piece(s, direction):
         if s.current_piece.piece_type == "O":
@@ -482,7 +471,6 @@ class Board:
         :return: None
         """
         if s.game_over == 1:
-            #s.scoreboard_screen.destroy()
             s.scoreboard_screen.pack_forget()
             s.game_screen.delete("all")
             s.reset()
