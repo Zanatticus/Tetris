@@ -6,6 +6,8 @@ import darkdetect
 import customtkinter
 import csv
 from profanity_filter import ProfanityFilter
+from better_profanity import profanity
+
 class Board:
     """
     Board class handles all the displaying of the board to the screen and everything else associated with the board.
@@ -250,9 +252,8 @@ class Board:
         
         if name and score:
             name = name[:10]
-
-            pf = ProfanityFilter()
-            name = pf.censor(name)
+            profanity.load_censor_words()
+            name = profanity.censor(name)
 
             existing_score = s.score_dict.get(name)
             
