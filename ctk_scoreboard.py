@@ -100,7 +100,7 @@ class ScoreboardApp:
             self.name_entry.destroy()
             self.name_label.destroy()
 
-# if __name__ == "__main__":
-#     root = customtkinter.CTk()
-#     app = ScoreboardApp(root, 1200)
-#     root.mainloop()
+if __name__ == "__main__":
+    root = customtkinter.CTk()
+    app = ScoreboardApp(root, 1200)
+    root.mainloop()
