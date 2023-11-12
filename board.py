@@ -3,17 +3,36 @@ import random
 from tkinter import *
 from ctk_scoreboard import ScoreboardApp
 import darkdetect
+import customtkinter
+import csv
+
 class Board:
     """
     Board class handles all the displaying of the board to the screen and everything else associated with the board.
     """
     gravity_count = 0
-    def __init__(s, game_screen, root):
+    def __init__(s, root, game_screen, scoreboard_screen):
         """
         Initializes a 10x20 Tetris board
         """
-        s.game_screen = game_screen
         s.root = root
+        s.game_screen = game_screen
+        
+        s.scoreboard_screen = scoreboard_screen
+        s.csv_filepath = "scoreboard.csv"
+        s.score_dict = {}
+        with open(s.csv_filepath, 'r') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            # Assuming the first row contains column headers
+            headers = next(csv_reader, None)
+            for row in csv_reader:
+                if row:  # Skip empty rows
+                    name = row[0]
+                    score = float(row[1])  # Assuming scores are numeric, adjust if needed
+                    s.score_dict[name] = score
+            s.score_dict = dict(sorted(s.score_dict.items(), key=lambda item: item[1], reverse=True))
+        s.create_widgets()
+        
         system_color_mode = darkdetect.theme()
         if system_color_mode == 'Dark':
             s.fill_color = 'black'
@@ -21,8 +40,8 @@ class Board:
         else:
             s.fill_color = 'white'
             s.outline_color = 'black'
+            
         s.game_over = 0
-
         s.points = 0
         s.rows = 20
         s.columns = 10
@@ -45,6 +64,7 @@ class Board:
 
     def reset(s):
         s.points = 0
+        s.game_over = 0
         s.holder = []
         s.board_array = [[None] * s.columns for i in range(s.rows)]
         s.queue_array = [[None] * s.queue_columns for i in range(s.queue_rows)]
@@ -53,7 +73,6 @@ class Board:
         s.current_piece = s.get_random_piece()
         s.update_queue_array()
         s.spawn_piece()
-        s.game_over = 0
         s.root.after(0, s.gravity())
         
     def display_board(s):
@@ -178,15 +197,110 @@ class Board:
         
     def end_game(s):
         s.game_over = 1
-
         s.game_screen.delete("all")
         s.game_screen.pack_forget()
-        
-        s.scoreboard_screen = Frame(s.root, bg='grey')
         s.scoreboard_screen.pack(expand=1, fill='both')
-        ScoreboardApp(s.scoreboard_screen, s.points)
+        s.scoreboard_screen.focus_set()
+        s.scoreboard_screen.bind("<Key>", s.scoreboard_keyboard_buttons)
+        s.scoreboard_screen.bind("<Button-1>", s.click_event)
 
+        if s.points != 0:
+            s.create_score_submission()
+        #ScoreboardApp(s.root, s.scoreboard_screen, s.game_screen, s.points)
+        #s.game_screen.focus_set()
         #TODO PROFANITY FILTER
+    
+    
+    def create_widgets(s):
+        # Game Over text
+        s.scoreboard_label1 = customtkinter.CTkLabel(s.scoreboard_screen, text="GAME OVER!", font=("Helvetica", 45))
+        s.scoreboard_label1.pack(pady=10)
+        # Restart/Quit text
+        s.scoreboard_label2 = customtkinter.CTkLabel(s.scoreboard_screen, text="Press 'R' to restart or 'ESC' to quit!", font=("Helvetica", 30))
+        s.scoreboard_label2.pack(pady=10)
+        # Label for displaying the scoreboard
+        s.scoreboard_label3 = customtkinter.CTkLabel(s.scoreboard_screen, text="Scoreboard", font=("Helvetica", 30))
+        s.scoreboard_label3.pack(pady=10)
+        
+        # Listbox to display scores
+        s.score_frame = customtkinter.CTkScrollableFrame(s.scoreboard_screen, width=200, height=400)
+        s.score_frame.pack()
+        
+        for name in s.score_dict:
+            txt = f"{name}: {int(s.score_dict.get(name))}"
+            s.score_entry = customtkinter.CTkLabel(s.score_frame, text=txt)
+            s.score_entry.pack()
+    
+    def click_event(s, event):
+        x,y = s.scoreboard_screen.winfo_pointerxy()                   # get the mouse position on screen
+        widget = s.scoreboard_screen.winfo_containing(x,y)            # identify the widget at this location
+        if (widget == ".text_widget") == False:                       # if the mouse is not over the text widget
+            s.scoreboard_screen.focus_set()                           # focus on root
+            
+    def create_score_submission(s):
+        # Entry fields for name and score
+        s.name_label = customtkinter.CTkLabel(s.scoreboard_screen, text="Name:")
+        s.name_label.pack()
+        s.name_entry = customtkinter.CTkEntry(s.scoreboard_screen)
+        s.name_entry.pack()
+        
+        # Add score button
+        s.add_score_button = customtkinter.CTkButton(s.scoreboard_screen, text="Add Score", command=s.add_score)
+        s.add_score_button.pack(pady=10)
+
+    def add_score(s):
+        name = s.name_entry.get().upper()
+        score = s.points
+        
+        if name and score:
+            name = name[:10]
+            existing_score = s.score_dict.get(name)
+            
+            if existing_score != None:    
+                if score <= s.score_dict.get(name):
+                    print("Can only override a score with same name if the new score is higher")
+                    return
+            
+            s.score_dict[name] = score
+            txt = f"{name}: {s.score_dict.get(name)}"
+            
+            # Sort the score dict
+            s.score_dict = dict(sorted(s.score_dict.items(), key=lambda item: item[1], reverse=True))
+            
+            # Clear existing contents of the CSV file
+            with open(s.csv_filepath, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerows([])  # Writing an empty list to clear the file
+
+            # Write the dictionary to the CSV file
+            with open(s.csv_filepath, 'a', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+
+                # Write header
+                csv_writer.writerow(['NAME', 'SCORE'])
+
+                # Write data
+                for name, score in s.score_dict.items():
+                    csv_writer.writerow([name, score])
+                    
+            s.score_entry = customtkinter.CTkLabel(s.score_frame, text=txt)
+            s.score_entry.pack()
+            
+            # Clear the entry fields
+            s.add_score_button.destroy()
+            s.name_entry.destroy()
+            s.name_label.destroy()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     def rotate_piece(s, direction):
         if s.current_piece.piece_type == "O":
@@ -349,16 +463,30 @@ class Board:
             elif button_pressed.lower() == "s":
                 s.soft_drop()            
     
+    def scoreboard_keyboard_buttons(s, event):
+        button_pressed = event.keysym
+        if button_pressed.lower() == "r":
+            try:
+                s.add_score_button.destroy()
+                s.name_entry.destroy()
+                s.name_label.destroy()
+            except:
+                pass
+            s.play_new_game()
+        elif button_pressed.lower() == "escape":
+            s.root.destroy()
+    
     def play_new_game(s):
         """
         Restarts the game.
         :return: None
         """
         if s.game_over == 1:
+            #s.scoreboard_screen.destroy()
+            s.scoreboard_screen.pack_forget()
             s.game_screen.delete("all")
             s.reset()
             s.display_board()
-            s.scoreboard_screen.destroy()
-            s.scoreboard_screen.pack_forget()
             s.game_screen.pack(expand=1, fill='both')
+            s.game_screen.focus_set()
         
